@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Chasse au Trésor d'Estelle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      color: #f0e6d3;
+      overflow: hidden;
+    }
+
+    .etape {
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .etape h2 {
+      font-size: 1.4rem;
+      margin-bottom: 0.8rem;
+      text-align: center;
+      color: #f4d35e;
+      text-shadow: 0 0 10px rgba(244, 211, 94, 0.3);
+    }
+
+    .image-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 0;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .rotate-message {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      color: #f4d35e;
+      font-size: 1.3rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .rotate-message .phone-icon {
+      font-size: 4rem;
+      animation: rotate-hint 2s ease-in-out infinite;
+    }
+
+    @keyframes rotate-hint {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-30deg); }
+      75% { transform: rotate(30deg); }
+    }
+
+    .reveal {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 26, 46, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+      transition: background 0.6s ease;
+    }
+
+    .reveal.visible {
+      background: rgba(26, 26, 46, 0.92);
+      pointer-events: auto;
+    }
+
+    .reveal-text {
+      font-size: 1.8rem;
+      color: #f4d35e;
+      text-align: center;
+      padding: 2rem;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s,
+                  opacity 0.4s ease 0.3s;
+      text-shadow: 0 0 20px rgba(244, 211, 94, 0.5);
+    }
+
+    .reveal.visible .reveal-text {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .next-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: #f4d35e;
+      color: #1a1a2e;
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 50px;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s,
+                  opacity 0.3s ease 0.8s;
+      box-shadow: 0 4px 15px rgba(244, 211, 94, 0.3);
+    }
+
+    .next-btn:active {
+      transform: scale(0.95) !important;
+    }
+
+    .reveal.visible .next-btn {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    @media (orientation: portrait) {
+      .etape[data-orientation="landscape"] .rotate-message {
+        display: flex;
+      }
+      .etape[data-orientation="landscape"] .image-container,
+      .etape[data-orientation="landscape"] h2 {
+        display: none;
+      }
+    }
+
+    @media (orientation: landscape) {
+      .etape[data-orientation="portrait"] .rotate-message {
+        display: flex;
+      }
+      .etape[data-orientation="portrait"] .image-container,
+      .etape[data-orientation="portrait"] h2 {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="etape" data-orientation="landscape">
+    <h2>👀 Regarde bien autour de toi... Tu la vois cette grande tour ? 🗼</h2>
+    <div class="image-container">
+      <img src="images/11 tour du chatelet.jpg" alt="Tour du Châtelet">
+    </div>
+    <div class="reveal" hidden>
+      <div class="reveal-text">⛪ C'est la Tour Saint-Jacques ! Avant c'était une église, Saint-Jacques de la Boucherie... On pouvait acheter ses côtelettes et prier en même temps ! 🥩😂</div>
+      <a href="12.html" class="next-btn">Enigme suivante ➡️</a>
+    </div>
+    <div class="rotate-message">
+      <div class="phone-icon">&#128241;</div>
+      <p>Tourne ton téléphone !</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    document.querySelectorAll('.etape').forEach(etape => {
+      etape.addEventListener('dblclick', () => reveal(etape));
+
+      let lastTap = 0;
+      etape.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTap < 350) {
+          e.preventDefault();
+          reveal(etape);
+        }
+        lastTap = now;
+      });
+    });
+
+    function reveal(etape) {
+      const rev = etape.querySelector('.reveal');
+      if (!rev || rev.classList.contains('visible')) return;
+      rev.hidden = false;
+      rev.offsetWidth;
+      rev.classList.add('visible');
+
+      const duration = 2000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+  </script>
+</body>
+</html>

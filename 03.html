@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Chasse au Trésor d'Estelle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      color: #f0e6d3;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .etape {
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      gap: 0.8rem;
+    }
+
+    .etape h2 {
+      font-size: 1.4rem;
+      text-align: center;
+      color: #f4d35e;
+      text-shadow: 0 0 10px rgba(244, 211, 94, 0.3);
+      flex-shrink: 0;
+    }
+
+    /* Taquin grid */
+    .taquin-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 0;
+    }
+
+    .taquin {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 3px;
+      background: #0d0d1a;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      aspect-ratio: 4 / 3;
+      max-width: 100%;
+      max-height: 100%;
+      touch-action: none;
+    }
+
+    /* size the taquin based on available space */
+    @media (orientation: landscape) {
+      .taquin {
+        height: 100%;
+        width: auto;
+      }
+    }
+
+    @media (orientation: portrait) {
+      .taquin {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .tile {
+      background-image: url('images/03 lavage auto.jpg');
+      background-size: 400% 300%;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      position: relative;
+    }
+
+    .tile:active {
+      transform: scale(0.95);
+    }
+
+    .tile span {
+      position: absolute;
+      top: 4px;
+      left: 6px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
+    .tile.empty {
+      background: #0d0d1a;
+      cursor: default;
+    }
+
+    .tile.empty:active {
+      transform: none;
+    }
+
+    .tile.neighbor {
+      box-shadow: inset 0 0 0 2px rgba(244, 211, 94, 0.4);
+    }
+
+    /* Message de rotation */
+    .rotate-message {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      color: #f4d35e;
+      font-size: 1.3rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .rotate-message .phone-icon {
+      font-size: 4rem;
+      animation: rotate-hint 2s ease-in-out infinite;
+    }
+
+    @keyframes rotate-hint {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-30deg); }
+      75% { transform: rotate(30deg); }
+    }
+
+    /* Reveal animation */
+    .reveal {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 26, 46, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+      transition: background 0.6s ease;
+    }
+
+    .reveal.visible {
+      background: rgba(26, 26, 46, 0.92);
+      pointer-events: auto;
+    }
+
+    .reveal-text {
+      font-size: 1.8rem;
+      color: #f4d35e;
+      text-align: center;
+      padding: 2rem;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s,
+                  opacity 0.4s ease 0.3s;
+      text-shadow: 0 0 20px rgba(244, 211, 94, 0.5);
+    }
+
+    .reveal.visible .reveal-text {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .reveal img {
+      max-width: 80%;
+      max-height: 40vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      margin-top: 1rem;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s,
+                  opacity 0.4s ease 0.5s;
+    }
+
+    .reveal.visible img {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .next-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: #f4d35e;
+      color: #1a1a2e;
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 50px;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s,
+                  opacity 0.3s ease 0.8s;
+      box-shadow: 0 4px 15px rgba(244, 211, 94, 0.3);
+    }
+
+    .next-btn:active {
+      transform: scale(0.95) !important;
+    }
+
+    .reveal.visible .next-btn {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* Portrait device + landscape image => show rotate message */
+    @media (orientation: portrait) {
+      .etape[data-orientation="landscape"] .rotate-message {
+        display: flex;
+      }
+      .etape[data-orientation="landscape"] .taquin-wrapper,
+      .etape[data-orientation="landscape"] h2 {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="etape" data-orientation="landscape">
+    <h2>😱 Oh non, cette image est toute mélangée !</h2>
+    <div class="taquin-wrapper">
+      <div class="taquin" id="taquin"></div>
+    </div>
+    <div class="reveal" hidden id="reveal">
+      <div class="reveal-text">🚗✨ Bravo, tu as reconstitué le lavage auto ! 🧽</div>
+      <img src="images/03 lavage auto.jpg" alt="Lavage auto">
+      <a href="04.html" class="next-btn">Enigme suivante ➡️</a>
+    </div>
+    <div class="rotate-message">
+      <div class="phone-icon">&#128241;</div>
+      <p>Tourne ton téléphone !</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    const COLS = 4;
+    const ROWS = 3;
+    const TOTAL = COLS * ROWS;
+
+    // positions: index = current grid slot, value = tile id (0-10, 11 = empty)
+    let board = [];
+    const EMPTY = TOTAL - 1;
+
+    function init() {
+      // start solved then shuffle
+      board = Array.from({ length: TOTAL }, (_, i) => i);
+      // shuffle with valid moves to ensure solvable
+      let emptyIdx = EMPTY;
+      for (let i = 0; i < 10; i++) {
+        const neighbors = getNeighbors(emptyIdx);
+        const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+        [board[emptyIdx], board[pick]] = [board[pick], board[emptyIdx]];
+        emptyIdx = pick;
+      }
+      render();
+    }
+
+    function getNeighbors(idx) {
+      const row = Math.floor(idx / COLS);
+      const col = idx % COLS;
+      const result = [];
+      if (row > 0) result.push(idx - COLS);
+      if (row < ROWS - 1) result.push(idx + COLS);
+      if (col > 0) result.push(idx - 1);
+      if (col < COLS - 1) result.push(idx + 1);
+      return result;
+    }
+
+    function render() {
+      const grid = document.getElementById('taquin');
+      grid.innerHTML = '';
+      const emptyIdx = board.indexOf(EMPTY);
+      const emptyNeighbors = getNeighbors(emptyIdx);
+
+      board.forEach((tileId, idx) => {
+        const div = document.createElement('div');
+        div.classList.add('tile');
+        div.dataset.idx = idx;
+
+        if (tileId === EMPTY) {
+          div.classList.add('empty');
+        } else {
+          // background position based on tile's original position
+          const origCol = tileId % COLS;
+          const origRow = Math.floor(tileId / COLS);
+          div.style.backgroundPosition =
+            `${(origCol / (COLS - 1)) * 100}% ${(origRow / (ROWS - 1)) * 100}%`;
+
+          const num = document.createElement('span');
+          num.textContent = tileId + 1;
+          div.appendChild(num);
+
+          if (emptyNeighbors.includes(idx)) {
+            div.classList.add('neighbor');
+          }
+
+          // click/tap to slide
+          div.addEventListener('click', () => tryMove(idx));
+          div.addEventListener('touchstart', handleTouchStart, { passive: true });
+          div.addEventListener('touchend', handleTouchEnd, { passive: false });
+        }
+
+        grid.appendChild(div);
+      });
+    }
+
+    let touchStartPos = null;
+    let touchStartIdx = null;
+
+    function handleTouchStart(e) {
+      const touch = e.touches[0];
+      touchStartPos = { x: touch.clientX, y: touch.clientY };
+      touchStartIdx = parseInt(e.currentTarget.dataset.idx);
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchStartPos || touchStartIdx === null) return;
+
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartPos.x;
+      const dy = touch.clientY - touchStartPos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 10) {
+        // simple tap
+        e.preventDefault();
+        tryMove(touchStartIdx);
+      } else {
+        // swipe: determine direction
+        const emptyIdx = board.indexOf(EMPTY);
+        const tileRow = Math.floor(touchStartIdx / COLS);
+        const tileCol = touchStartIdx % COLS;
+        const emptyRow = Math.floor(emptyIdx / COLS);
+        const emptyCol = emptyIdx % COLS;
+
+        let targetIdx = null;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          // horizontal swipe
+          if (dx > 0 && emptyCol === tileCol + 1 && emptyRow === tileRow) targetIdx = touchStartIdx;
+          if (dx < 0 && emptyCol === tileCol - 1 && emptyRow === tileRow) targetIdx = touchStartIdx;
+        } else {
+          // vertical swipe
+          if (dy > 0 && emptyRow === tileRow + 1 && emptyCol === tileCol) targetIdx = touchStartIdx;
+          if (dy < 0 && emptyRow === tileRow - 1 && emptyCol === tileCol) targetIdx = touchStartIdx;
+        }
+
+        if (targetIdx !== null) {
+          e.preventDefault();
+          tryMove(targetIdx);
+        }
+      }
+
+      touchStartPos = null;
+      touchStartIdx = null;
+    }
+
+    function tryMove(idx) {
+      const emptyIdx = board.indexOf(EMPTY);
+      if (!getNeighbors(emptyIdx).includes(idx)) return;
+
+      [board[emptyIdx], board[idx]] = [board[idx], board[emptyIdx]];
+      render();
+
+      if (isSolved()) {
+        setTimeout(win, 300);
+      }
+    }
+
+    function isSolved() {
+      return board.every((val, idx) => val === idx);
+    }
+
+    function win() {
+      const rev = document.getElementById('reveal');
+      rev.hidden = false;
+      rev.offsetWidth;
+      rev.classList.add('visible');
+
+      // confettis
+      const duration = 2000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    init();
+  </script>
+</body>
+</html>

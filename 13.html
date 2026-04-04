@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Chasse au Trésor d'Estelle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Georgia', serif;
+      color: #f0e6d3;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .emoji-wall {
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      padding: 0.5rem;
+      font-size: 2.2rem;
+      line-height: 1.3;
+      letter-spacing: 2px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .emoji-wall span {
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .emoji-wall span.pop {
+      animation: emoji-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes emoji-pop {
+      0% { transform: scale(0) rotate(-20deg); }
+      60% { transform: scale(1.3) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .bravo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 0.8rem;
+      font-size: 1.3rem;
+      color: #f4d35e;
+      text-shadow: 0 0 10px rgba(244, 211, 94, 0.3);
+      background: linear-gradient(to bottom, #1a1a2e, transparent);
+      z-index: 10;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bravo">🎉🎉🎉 BRAVO ESTELLE 🎉🎉🎉<br>Double-tape pour mélanger !</div>
+  <div class="emoji-wall" id="wall"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    const SETS = [
+      '❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💗💗💗💗💗💗💗💗💗💗💕💕💕💕💕💕💕💕💕💕',
+      '⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫💫',
+      '🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🦋🦋🦋🦋🦋🦋🦋🦋🦋🦋🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌷🌷🌷🌷🌷🌷🌷🌷🌷🌷🌻🌻🌻🌻🌻🌻🌻🌻🌻🌻',
+      '🐱🐱🐱🐱🐱🐱🐱🐱🐱🐱🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐹🐹🐹🐹🐹🐹🐹🐹🐹🐹🐻🐻🐻🐻🐻🐻🐻🐻🐻🐻🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊',
+      '🍭🍭🍭🍭🍭🍭🍭🍭🍭🍭🍬🍬🍬🍬🍬🍬🍬🍬🍬🍬🧁🧁🧁🧁🧁🧁🧁🧁🧁🧁🍰🍰🍰🍰🍰🍰🍰🍰🍰🍰🎂🎂🎂🎂🎂🎂🎂🎂🎂🎂🍩🍩🍩🍩🍩🍩🍩🍩🍩🍩',
+      '🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🌙🌙🌙🌙🌙🌙🌙🌙🌙🌙⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐🪐🪐🪐🪐🪐🪐🪐🪐🪐🪐👽👽👽👽👽👽👽👽👽👽🛸🛸🛸🛸🛸🛸🛸🛸🛸🛸',
+      '🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎊🎊🎊🎊🎊🎊🎊🎊🎊🎊🥳🥳🥳🥳🥳🥳🥳🥳🥳🥳🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈🎁🎁🎁🎁🎁🎁🎁🎁🎁🎁🪅🪅🪅🪅🪅🪅🪅🪅🪅🪅',
+      '🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨💜💜💜💜💜💜💜💜💜💜💜💜💜💜💜🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈🌈',
+      '🐸🐸🐸🐸🐸🐸🐸🐸🐸🐸🍀🍀🍀🍀🍀🍀🍀🍀🍀🍀💚💚💚💚💚💚💚💚💚💚🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🐢🐢🐢🐢🐢🐢🐢🐢🐢🐢🌲🌲🌲🌲🌲🌲🌲🌲🌲🌲',
+      '👸👸👸👸👸👸👸👸👸👸👑👑👑👑👑👑👑👑👑👑💎💎💎💎💎💎💎💎💎💎🏰🏰🏰🏰🏰🏰🏰🏰🏰🏰🪄🪄🪄🪄🪄🪄🪄🪄🪄🪄✨✨✨✨✨✨✨✨✨✨',
+    ];
+
+    let currentSet = -1;
+    const wall = document.getElementById('wall');
+
+    function fillWall() {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * SETS.length);
+      } while (idx === currentSet);
+      currentSet = idx;
+
+      const emojis = [...SETS[idx]];
+      // shuffle
+      for (let i = emojis.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [emojis[i], emojis[j]] = [emojis[j], emojis[i]];
+      }
+
+      wall.innerHTML = '';
+      emojis.forEach((e, i) => {
+        const span = document.createElement('span');
+        span.textContent = e;
+        span.style.animationDelay = `${Math.random() * 0.5}s`;
+        span.classList.add('pop');
+        wall.appendChild(span);
+      });
+
+      // confettis
+      confetti({
+        particleCount: 80,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a', '#ff69b4']
+      });
+    }
+
+    // double click / double tap
+    wall.addEventListener('dblclick', fillWall);
+
+    let lastTap = 0;
+    wall.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTap < 350) {
+        e.preventDefault();
+        fillWall();
+      }
+      lastTap = now;
+    });
+
+    // initial fill
+    fillWall();
+  </script>
+</body>
+</html>

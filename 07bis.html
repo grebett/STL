@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Chasse au Trésor d'Estelle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Georgia', serif;
+      color: #f0e6d3;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .header {
+      text-align: center;
+      padding: 0.5rem 1rem;
+      flex-shrink: 0;
+    }
+
+    .header h2 {
+      font-size: 1.2rem;
+      color: #f4d35e;
+      text-shadow: 0 0 10px rgba(244, 211, 94, 0.3);
+    }
+
+    .counter {
+      font-size: 1rem;
+      margin-top: 0.3rem;
+      color: #f0e6d3;
+    }
+
+    .counter .found {
+      color: #f4d35e;
+      font-weight: bold;
+    }
+
+    .game {
+      flex: 1;
+      display: flex;
+      gap: 6px;
+      padding: 0 0.5rem 0.5rem;
+      min-height: 0;
+    }
+
+    .image-panel {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 2px solid #333;
+      touch-action: none;
+    }
+
+    .image-panel .inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-origin: 0 0;
+    }
+
+    .image-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Difference zones */
+    .diff-zone {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .diff-zone.found {
+      border: 3px solid #2a9d8f;
+      background: rgba(42, 157, 143, 0.15);
+      animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    /* Rotate message */
+    .rotate-message {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      color: #f4d35e;
+      font-size: 1.3rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .rotate-message .phone-icon {
+      font-size: 4rem;
+      animation: rotate-hint 2s ease-in-out infinite;
+    }
+
+    @keyframes rotate-hint {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-30deg); }
+      75% { transform: rotate(30deg); }
+    }
+
+    @media (orientation: portrait) {
+      .rotate-message { display: flex; }
+      .header, .game { display: none; }
+    }
+
+    /* Reveal */
+    .reveal {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 26, 46, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+      transition: background 0.6s ease;
+    }
+
+    .reveal.visible {
+      background: rgba(26, 26, 46, 0.92);
+      pointer-events: auto;
+    }
+
+    .reveal-text {
+      font-size: 1.8rem;
+      color: #f4d35e;
+      text-align: center;
+      padding: 2rem;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s,
+                  opacity 0.4s ease 0.3s;
+      text-shadow: 0 0 20px rgba(244, 211, 94, 0.5);
+    }
+
+    .reveal.visible .reveal-text {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .next-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: #f4d35e;
+      color: #1a1a2e;
+      font-family: 'Georgia', serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 50px;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s,
+                  opacity 0.3s ease 0.8s;
+      box-shadow: 0 4px 15px rgba(244, 211, 94, 0.3);
+    }
+
+    .next-btn:active {
+      transform: scale(0.95) !important;
+    }
+
+    .reveal.visible .next-btn {
+      transform: scale(1);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>🔍 Trouve les 7 différences !</h2>
+    <div class="counter">Erreurs trouvées : <span class="found" id="count">0</span> / 7</div>
+  </div>
+
+  <div class="game">
+    <div class="image-panel" id="panel-left">
+      <div class="inner" id="inner-left">
+        <img src="images/07b intermarche.png" alt="Intermarché original">
+      </div>
+    </div>
+    <div class="image-panel" id="panel-right">
+      <div class="inner" id="inner-right">
+        <img src="images/07c intermarche 7 differences.png" alt="Intermarché différences">
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal" hidden id="reveal">
+    <div class="reveal-text">🎉 Bravo, tu as trouvé les 7 différences ! 👏</div>
+    <a href="08.html" class="next-btn">Enigme suivante ➡️</a>
+  </div>
+
+  <div class="rotate-message">
+    <div class="phone-icon">&#128241;</div>
+    <p>Tourne ton téléphone !</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    // Difference zones: [x%, y%, radius%] relative to image natural size
+    const DIFFS = [
+      { x: 52, y: 19, r: 12 }, // soleil
+      { x: 41, y: 49, r: 8  }, // SUPER à l'envers
+      { x: 7,  y: 64, r: 9  }, // personnage à gauche
+      { x: 49, y: 61, r: 7  }, // moto rouge
+      { x: 73, y: 62, r: 10 }, // voiture bleue
+      { x: 90, y: 51, r: 10 }, // détail bâtiment droit
+      { x: 84, y: 83, r: 11 }, // chat
+    ];
+
+    let found = new Set();
+
+    function createZones(inner) {
+      DIFFS.forEach((d, i) => {
+        const zone = document.createElement('div');
+        zone.classList.add('diff-zone');
+        zone.dataset.idx = i;
+        zone.style.left = `${d.x - d.r}%`;
+        zone.style.top = `${d.y - d.r}%`;
+        zone.style.width = `${d.r * 2}%`;
+        zone.style.height = `${d.r * 2}%`;
+        zone.addEventListener('click', (e) => {
+          e.stopPropagation();
+          markFound(i);
+        });
+        inner.appendChild(zone);
+      });
+    }
+
+    createZones(document.getElementById('inner-left'));
+    createZones(document.getElementById('inner-right'));
+
+    function markFound(idx) {
+      if (found.has(idx)) return;
+      found.add(idx);
+
+      // Mark on both panels
+      document.querySelectorAll(`.diff-zone[data-idx="${idx}"]`).forEach(z => {
+        z.classList.add('found');
+      });
+
+      document.getElementById('count').textContent = found.size;
+
+      if (found.size === 7) {
+        setTimeout(win, 600);
+      }
+    }
+
+    function win() {
+      const rev = document.getElementById('reveal');
+      rev.hidden = false;
+      rev.offsetWidth;
+      rev.classList.add('visible');
+
+      const duration = 2000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({
+          particleCount: 3, angle: 60, spread: 55,
+          origin: { x: 0, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        confetti({
+          particleCount: 3, angle: 120, spread: 55,
+          origin: { x: 1, y: 0.7 },
+          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    // === Zoom & Pan per panel ===
+    const panels = {
+      left:  { scale: 1, x: 0, y: 0, inner: document.getElementById('inner-left'),  el: document.getElementById('panel-left') },
+      right: { scale: 1, x: 0, y: 0, inner: document.getElementById('inner-right'), el: document.getElementById('panel-right') },
+    };
+
+    function applyTransform(panel) {
+      const p = panels[panel];
+      p.inner.style.transform = `translate(${p.x}px, ${p.y}px) scale(${p.scale})`;
+    }
+
+    function clampPan(panel) {
+      const p = panels[panel];
+      const rect = p.el.getBoundingClientRect();
+      const maxX = Math.max(0, (rect.width * p.scale - rect.width) / 2);
+      const maxY = Math.max(0, (rect.height * p.scale - rect.height) / 2);
+      p.x = Math.max(-maxX, Math.min(maxX, p.x));
+      p.y = Math.max(-maxY, Math.min(maxY, p.y));
+    }
+
+    // Pinch to zoom + pan
+    ['left', 'right'].forEach(panel => {
+      const p = panels[panel];
+      let touches = {};
+      let lastDist = 0;
+      let lastCenter = null;
+      let isPinching = false;
+
+      p.el.addEventListener('touchstart', (e) => {
+        for (const t of e.changedTouches) {
+          touches[t.identifier] = { x: t.clientX, y: t.clientY };
+        }
+        const keys = Object.keys(touches);
+        if (keys.length >= 2) {
+          isPinching = true;
+          const t1 = touches[keys[0]], t2 = touches[keys[1]];
+          lastDist = Math.hypot(t2.x - t1.x, t2.y - t1.y);
+          lastCenter = { x: (t1.x + t2.x) / 2, y: (t1.y + t2.y) / 2 };
+        }
+      }, { passive: true });
+
+      p.el.addEventListener('touchmove', (e) => {
+        for (const t of e.changedTouches) {
+          touches[t.identifier] = { x: t.clientX, y: t.clientY };
+        }
+        const keys = Object.keys(touches);
+
+        if (keys.length >= 2) {
+          e.preventDefault();
+          const t1 = touches[keys[0]], t2 = touches[keys[1]];
+          const dist = Math.hypot(t2.x - t1.x, t2.y - t1.y);
+          const center = { x: (t1.x + t2.x) / 2, y: (t1.y + t2.y) / 2 };
+
+          const scaleChange = dist / lastDist;
+          p.scale = Math.max(1, Math.min(4, p.scale * scaleChange));
+
+          p.x += center.x - lastCenter.x;
+          p.y += center.y - lastCenter.y;
+
+          lastDist = dist;
+          lastCenter = center;
+          clampPan(panel);
+          applyTransform(panel);
+        } else if (keys.length === 1 && p.scale > 1 && !isPinching) {
+          const t = touches[keys[0]];
+          const prev = { ...touches[keys[0]] };
+          // Use changedTouches for delta
+          const ct = e.changedTouches[0];
+          p.x += ct.clientX - (p._lastSingleX || ct.clientX);
+          p.y += ct.clientY - (p._lastSingleY || ct.clientY);
+          p._lastSingleX = ct.clientX;
+          p._lastSingleY = ct.clientY;
+          clampPan(panel);
+          applyTransform(panel);
+        }
+      }, { passive: false });
+
+      p.el.addEventListener('touchstart', (e) => {
+        if (Object.keys(touches).length === 1) {
+          const ct = e.changedTouches[0];
+          p._lastSingleX = ct.clientX;
+          p._lastSingleY = ct.clientY;
+        }
+      }, { passive: true });
+
+      p.el.addEventListener('touchend', (e) => {
+        for (const t of e.changedTouches) {
+          delete touches[t.identifier];
+        }
+        if (Object.keys(touches).length < 2) {
+          isPinching = false;
+        }
+        p._lastSingleX = null;
+        p._lastSingleY = null;
+      });
+
+      // Mouse wheel zoom (desktop)
+      p.el.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          p.scale = Math.min(4, p.scale * 1.2);
+        } else {
+          p.scale = Math.max(1, p.scale / 1.2);
+          if (p.scale === 1) { p.x = 0; p.y = 0; }
+        }
+        clampPan(panel);
+        applyTransform(panel);
+      }, { passive: false });
+
+      // Mouse drag (desktop)
+      let dragging = false;
+      let dragStart = null;
+      p.el.addEventListener('mousedown', (e) => {
+        if (p.scale > 1) {
+          dragging = true;
+          dragStart = { x: e.clientX, y: e.clientY };
+        }
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        p.x += e.clientX - dragStart.x;
+        p.y += e.clientY - dragStart.y;
+        dragStart = { x: e.clientX, y: e.clientY };
+        clampPan(panel);
+        applyTransform(panel);
+      });
+      window.addEventListener('mouseup', () => { dragging = false; });
+    });
+  </script>
+</body>
+</html>
