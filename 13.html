@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Chasse au Trésor d'Estelle</title>
   <style>
@@ -67,13 +68,38 @@
       z-index: 10;
       pointer-events: none;
     }
+
+    .sound-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(244, 211, 94, 0.5);
+      background: rgba(26, 26, 46, 0.8);
+      color: #f4d35e;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .sound-toggle:active {
+      background: rgba(244, 211, 94, 0.2);
+    }
   </style>
 </head>
 <body>
 
+  <button class="sound-toggle" id="soundToggle">🔇</button>
   <div class="bravo">🎉🎉🎉 BRAVO ESTELLE 🎉🎉🎉<br>Double-tape pour mélanger !</div>
   <div class="emoji-wall" id="wall"></div>
 
+  <script src="zzfx.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
     const SETS = [
@@ -135,6 +161,36 @@
         fillWall();
       }
       lastTap = now;
+    });
+
+    // === Music (autoplay – user already interacted on previous page) ===
+    const music = new Audio('songs/outro.mp3');
+    music.loop = true;
+    music.volume = 0.5;
+    let musicPlaying = false;
+    const toggleBtn = document.getElementById('soundToggle');
+
+    function startMusic() {
+      music.play();
+      musicPlaying = true;
+      toggleBtn.textContent = '🔊';
+    }
+
+    startMusic();
+
+    function stopMusic() {
+      music.pause();
+      musicPlaying = false;
+      toggleBtn.textContent = '🔇';
+    }
+
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (musicPlaying) {
+        stopMusic();
+      } else {
+        startMusic();
+      }
     });
 
     // initial fill

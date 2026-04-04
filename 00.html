@@ -59,6 +59,7 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
+    /* Message de rotation */
     .rotate-message {
       display: none;
       position: fixed;
@@ -80,12 +81,22 @@
       animation: rotate-hint 2s ease-in-out infinite;
     }
 
+    /* Image paysage : on cache si le téléphone est en portrait */
+    .etape[data-orientation="landscape"] .rotate-message.portrait {
+      /* s'affiche quand le viewport est en portrait */
+    }
+
+    .etape[data-orientation="portrait"] .rotate-message.landscape {
+      /* s'affiche quand le viewport est en paysage */
+    }
+
     @keyframes rotate-hint {
       0%, 100% { transform: rotate(0deg); }
       25% { transform: rotate(-30deg); }
       75% { transform: rotate(30deg); }
     }
 
+    /* Reveal animation */
     .reveal {
       position: fixed;
       inset: 0;
@@ -148,6 +159,7 @@
       opacity: 1;
     }
 
+    /* Portrait device + landscape image => show rotate message */
     @media (orientation: portrait) {
       .etape[data-orientation="landscape"] .rotate-message {
         display: flex;
@@ -158,6 +170,7 @@
       }
     }
 
+    /* Landscape device + portrait image => show rotate message */
     @media (orientation: landscape) {
       .etape[data-orientation="portrait"] .rotate-message {
         display: flex;
@@ -172,13 +185,13 @@
 <body>
 
   <div class="etape" data-orientation="landscape">
-    <h2>🚆 Allez, c'est l'heure de prendre le RER !</h2>
+    <h2>🔍 Observe bien ce dessin...</h2>
     <div class="image-container">
-      <img src="images/08 rer A.jpg" alt="RER A">
+      <img src="images/00 petits jeux.jpg" alt="Petits jeux">
     </div>
     <div class="reveal" hidden>
-      <div class="reveal-text">🧺 Est-ce que tu as bien pris ton pique-nique ? 🥪</div>
-      <a href="09.html" class="next-btn">Enigme suivante ➡️</a>
+      <div class="reveal-text">🎉 Bravo, c'est bien les petits jeux ! 🛝</div>
+      <a href="01.html" class="next-btn">Enigme suivante ➡️</a>
     </div>
     <div class="rotate-message">
       <div class="phone-icon">&#128241;</div>
@@ -192,6 +205,7 @@
     document.querySelectorAll('.etape').forEach(etape => {
       etape.addEventListener('dblclick', () => reveal(etape));
 
+      // double tap mobile
       let lastTap = 0;
       etape.addEventListener('touchend', (e) => {
         const now = Date.now();
@@ -207,11 +221,13 @@
       const rev = etape.querySelector('.reveal');
       if (!rev || rev.classList.contains('visible')) return;
       rev.hidden = false;
+      // force reflow
       rev.offsetWidth;
       rev.classList.add('visible');
       // victory sound
       new Audio('songs/victory.mp3').play();
 
+      // confettis !
       const duration = 2000;
       const end = Date.now() + duration;
       (function frame() {

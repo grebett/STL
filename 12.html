@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Chasse au Trésor d'Estelle</title>
   <style>
@@ -201,6 +202,7 @@
     </div>
   </div>
 
+  <script src="zzfx.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
     document.querySelectorAll('.etape').forEach(etape => {
@@ -223,6 +225,8 @@
       rev.hidden = false;
       rev.offsetWidth;
       rev.classList.add('visible');
+      // victory sound
+      new Audio('songs/victory.mp3').play();
 
       // confettis plus longs pour la fin !
       const duration = 4000;

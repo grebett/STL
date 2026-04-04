@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Chasse au Trésor d'Estelle</title>
+  <title>La Super Chasse au Trésor de Pâques 3000</title>
   <style>
     * {
       margin: 0;
@@ -23,227 +24,223 @@
       overflow: hidden;
     }
 
-    .etape {
-      width: 100%;
-      height: 100dvh;
+    .splash {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 1rem;
+      text-align: center;
       padding: 1rem;
+      max-height: 100dvh;
     }
 
-    .etape h2 {
-      font-size: 1.4rem;
-      margin-bottom: 0.8rem;
-      text-align: center;
+    .eggs {
+      font-size: 3rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .title {
+      font-size: 2.2rem;
       color: #f4d35e;
-      text-shadow: 0 0 10px rgba(244, 211, 94, 0.3);
-    }
-
-    .image-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 0;
-    }
-
-    .image-container img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-
-    /* Message de rotation */
-    .rotate-message {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #1a1a2e;
-      z-index: 100;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-      color: #f4d35e;
-      font-size: 1.3rem;
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .rotate-message .phone-icon {
-      font-size: 4rem;
-      animation: rotate-hint 2s ease-in-out infinite;
-    }
-
-    /* Image paysage : on cache si le téléphone est en portrait */
-    .etape[data-orientation="landscape"] .rotate-message.portrait {
-      /* s'affiche quand le viewport est en portrait */
-    }
-
-    .etape[data-orientation="portrait"] .rotate-message.landscape {
-      /* s'affiche quand le viewport est en paysage */
-    }
-
-    @keyframes rotate-hint {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(-30deg); }
-      75% { transform: rotate(30deg); }
-    }
-
-    /* Reveal animation */
-    .reveal {
-      position: fixed;
-      inset: 0;
-      background: rgba(26, 26, 46, 0);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      pointer-events: none;
-      transition: background 0.6s ease;
-    }
-
-    .reveal.visible {
-      background: rgba(26, 26, 46, 0.92);
-      pointer-events: auto;
-    }
-
-    .reveal-text {
-      font-size: 1.8rem;
-      color: #f4d35e;
-      text-align: center;
-      padding: 2rem;
-      transform: scale(0);
+      text-shadow: 0 0 20px rgba(244, 211, 94, 0.4);
+      line-height: 1.3;
       opacity: 0;
-      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s,
-                  opacity 0.4s ease 0.3s;
-      text-shadow: 0 0 20px rgba(244, 211, 94, 0.5);
+      transform: scale(0.5);
+      animation: title-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards;
     }
 
-    .reveal.visible .reveal-text {
-      transform: scale(1);
-      opacity: 1;
+    .title em {
+      font-style: normal;
+      color: #e63946;
+      text-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
     }
 
-    .next-btn {
+    .title .num {
+      font-size: 2.8rem;
+      display: block;
+      background: linear-gradient(135deg, #f4d35e, #e63946, #457b9d, #2a9d8f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 10px rgba(244, 211, 94, 0.3));
+    }
+
+    @keyframes title-in {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #f0e6d3;
+      opacity: 0;
+      animation: fade-in 0.6s ease 1.8s forwards;
+    }
+
+    @keyframes fade-in {
+      to { opacity: 1; }
+    }
+
+    .start-btn {
       display: inline-block;
-      margin-top: 1.5rem;
       padding: 0.8rem 2rem;
       background: #f4d35e;
       color: #1a1a2e;
       font-family: 'Georgia', serif;
-      font-size: 1.1rem;
+      font-size: 1.3rem;
       font-weight: bold;
       text-decoration: none;
       border-radius: 50px;
-      transform: scale(0);
+      box-shadow: 0 4px 20px rgba(244, 211, 94, 0.4);
       opacity: 0;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s,
-                  opacity 0.3s ease 0.8s;
-      box-shadow: 0 4px 15px rgba(244, 211, 94, 0.3);
+      transform: translateY(20px);
+      animation: btn-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.2s forwards;
+      transition: transform 0.2s ease;
     }
 
-    .next-btn:active {
+    .start-btn:active {
       transform: scale(0.95) !important;
     }
 
-    .reveal.visible .next-btn {
-      transform: scale(1);
-      opacity: 1;
+    @keyframes btn-in {
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Portrait device + landscape image => show rotate message */
-    @media (orientation: portrait) {
-      .etape[data-orientation="landscape"] .rotate-message {
-        display: flex;
-      }
-      .etape[data-orientation="landscape"] .image-container,
-      .etape[data-orientation="landscape"] h2 {
-        display: none;
-      }
+    .sparkles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
     }
 
-    /* Landscape device + portrait image => show rotate message */
-    @media (orientation: landscape) {
-      .etape[data-orientation="portrait"] .rotate-message {
-        display: flex;
-      }
-      .etape[data-orientation="portrait"] .image-container,
-      .etape[data-orientation="portrait"] h2 {
-        display: none;
-      }
+    .sparkle {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: sparkle-fall linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes sparkle-fall {
+      0% { transform: translateY(-60px) rotate(0deg); opacity: 0; }
+      5% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(100dvh) rotate(360deg); opacity: 0; }
+    }
+
+    .sound-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(244, 211, 94, 0.5);
+      background: rgba(26, 26, 46, 0.8);
+      color: #f4d35e;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .sound-toggle:active {
+      background: rgba(244, 211, 94, 0.2);
     }
   </style>
 </head>
 <body>
 
-  <div class="etape" data-orientation="landscape">
-    <h2>🔍 Observe bien ce dessin...</h2>
-    <div class="image-container">
-      <img src="images/00 petits jeux.jpg" alt="Petits jeux">
-    </div>
-    <div class="reveal" hidden>
-      <div class="reveal-text">🎉 Bravo, c'est bien les petits jeux ! 🛝</div>
-      <a href="01.html" class="next-btn">Enigme suivante ➡️</a>
-    </div>
-    <div class="rotate-message">
-      <div class="phone-icon">&#128241;</div>
-      <p>Tourne ton téléphone !</p>
-    </div>
+  <button class="sound-toggle" id="soundToggle">🔇</button>
+  <div class="sparkles" id="sparkles"></div>
+
+  <div class="splash">
+    <div class="eggs">🥚🐣🥚🐰🥚🐣🥚</div>
+    <h1 class="title">
+      La Super Chasse au Trésor<br>
+      <em>de Pâques</em><br>
+      <span class="num">3000</span>
+    </h1>
+    <a href="00.html" class="start-btn" id="startBtn">🚀 C'est parti ! 🚀</a>
+    <p class="subtitle">🗺️ Une aventure spécialement conçue pour Estelle 🌟</p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="zzfx.js"></script>
   <script>
-    document.querySelectorAll('.etape').forEach(etape => {
-      etape.addEventListener('dblclick', () => reveal(etape));
+    // Falling sparkles
+    const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '🥚', '🐣', '🐰', '🌸'];
+    const container = document.getElementById('sparkles');
 
-      // double tap mobile
-      let lastTap = 0;
-      etape.addEventListener('touchend', (e) => {
-        const now = Date.now();
-        if (now - lastTap < 350) {
-          e.preventDefault();
-          reveal(etape);
-        }
-        lastTap = now;
-      });
+    for (let i = 0; i < 20; i++) {
+      const span = document.createElement('span');
+      span.classList.add('sparkle');
+      span.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+      span.style.left = Math.random() * 100 + '%';
+      span.style.animationDuration = (4 + Math.random() * 6) + 's';
+      span.style.animationDelay = (Math.random() * 8) + 's';
+      span.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+      container.appendChild(span);
+    }
+
+    // === Music ===
+    const music = new Audio('songs/intro.mp3');
+    music.loop = true;
+    music.volume = 0.5;
+    let musicPlaying = false;
+    const toggleBtn = document.getElementById('soundToggle');
+
+    function startMusic() {
+      music.play();
+      musicPlaying = true;
+      toggleBtn.textContent = '🔊';
+    }
+
+    function stopMusic() {
+      music.pause();
+      musicPlaying = false;
+      toggleBtn.textContent = '🔇';
+    }
+
+    // Toggle button
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (musicPlaying) {
+        stopMusic();
+      } else {
+        startMusic();
+      }
     });
 
-    function reveal(etape) {
-      const rev = etape.querySelector('.reveal');
-      if (!rev || rev.classList.contains('visible')) return;
-      rev.hidden = false;
-      // force reflow
-      rev.offsetWidth;
-      rev.classList.add('visible');
+    // Button: fade music then navigate
+    document.getElementById('startBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      zzfx(...[2,,1e3,,.1,.3,1,2,,,800,.1,,,,,,.5]);
 
-      // confettis !
-      const duration = 2000;
-      const end = Date.now() + duration;
-      (function frame() {
-        confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.7 },
-          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
-        });
-        confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.7 },
-          colors: ['#f4d35e', '#e63946', '#457b9d', '#2a9d8f', '#e9c46a']
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      })();
-    }
+      if (!musicPlaying) {
+        setTimeout(() => { window.location.href = '00.html'; }, 300);
+        return;
+      }
+
+      // fade out
+      let vol = music.volume;
+      const fade = setInterval(() => {
+        vol -= 0.05;
+        if (vol <= 0) {
+          clearInterval(fade);
+          music.pause();
+          window.location.href = '00.html';
+        } else {
+          music.volume = vol;
+        }
+      }, 50);
+    });
   </script>
 </body>
 </html>
