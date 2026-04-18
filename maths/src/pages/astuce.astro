@@ -8,22 +8,12 @@ import Layout from '../layouts/Layout.astro';
 
 
     <div class="card">
-      <div class="problem">
-        <span class="num left" id="orig-left">7</span>
-        <span class="op">+</span>
-        <span class="num right" id="orig-right">9</span>
-        <span class="op">=</span>
-        <span class="op">?</span>
-      </div>
-
-      <div class="hint" id="hint">Utilise la balance pour trouver un double</div>
-
       <div class="balance-equation">
         <span class="num left" id="val-left">7</span>
         <span class="op">+</span>
         <span class="num right" id="val-right">9</span>
-        <span class="double-badge" id="double-badge">&nbsp;</span>
       </div>
+      <div class="double-badge" id="double-badge">&nbsp;</div>
 
       <div class="balance-scene">
         <div class="platform" id="lever">
@@ -44,7 +34,10 @@ import Layout from '../layouts/Layout.astro';
         <button class="arrow-btn" id="btn-right">▶</button>
       </div>
 
-      <div class="answer-row">
+      <div class="problem">
+        <span class="num left" id="orig-left">7</span>
+        <span class="op">+</span>
+        <span class="num right" id="orig-right">9</span>
         <span class="op">=</span>
         <input
           type="number"
@@ -161,24 +154,14 @@ import Layout from '../layouts/Layout.astro';
     justify-content: center;
     gap: 0.4rem;
     margin-bottom: 0.3rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px dashed #e0e0e0;
   }
 
   .problem .num {
-    font-size: 3rem;
+    font-size: 2.8rem;
   }
 
   .problem .op {
-    font-size: 2.5rem;
-  }
-
-  .hint {
-    font-size: 1rem;
-    color: #7c3aed;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-    min-height: 1.5rem;
+    font-size: 2.8rem;
   }
 
   .balance-equation {
@@ -213,7 +196,8 @@ import Layout from '../layouts/Layout.astro';
     font-size: 1rem;
     font-weight: 700;
     color: #16a34a;
-    margin-left: 0.5rem;
+    text-align: center;
+    min-height: 1.5rem;
     transition: opacity 0.3s;
     opacity: 0;
   }
@@ -303,7 +287,7 @@ import Layout from '../layouts/Layout.astro';
     align-items: center;
     gap: 0.8rem;
     justify-content: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .arrow-btn {
@@ -346,26 +330,18 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  .answer-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .answer-row .op {
-    font-size: 2.5rem;
-  }
-
   input[type="number"] {
     font-size: 2.8rem;
     font-weight: 700;
-    width: 4ch;
+    width: 3ch;
     text-align: center;
     border: 3px solid #e0e0e0;
-    border-radius: 1rem;
-    padding: 0.2rem;
+    border-radius: 0.8rem;
+    padding: 0;
+    line-height: 1;
+    vertical-align: middle;
+    font-family: inherit;
+    margin-top: 0.45rem;
     color: #1a1a2e;
     background: #fef7ff;
     outline: none;
@@ -537,7 +513,6 @@ import Layout from '../layouts/Layout.astro';
     void toast.offsetWidth;
     toast.classList.add('show');
   }
-  const hintEl = document.getElementById('hint')!;
   const doubleBadge = document.getElementById('double-badge')!;
   const streakEl = document.getElementById('streak')!;
   const starsEl = document.getElementById('stars')!;
@@ -661,11 +636,9 @@ import Layout from '../layouts/Layout.astro';
     if (leftCount === rightCount) {
       doubleBadge.textContent = 'C\u2019est un double';
       doubleBadge.classList.add('visible');
-      hintEl.textContent = '';
     } else {
       doubleBadge.textContent = '\u00a0';
       doubleBadge.classList.remove('visible');
-      hintEl.textContent = 'Utilise la balance pour trouver un double';
     }
   }
 
