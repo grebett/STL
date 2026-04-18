@@ -1,0 +1,504 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="L'astuce des doubles">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">← Retour</a>
+
+    <div class="card">
+      <div class="problem">
+        <span class="num left" id="orig-left">7</span>
+        <span class="op">+</span>
+        <span class="num right" id="orig-right">9</span>
+        <span class="op">=</span>
+        <span class="op">?</span>
+      </div>
+
+      <div class="hint" id="hint">Utilise la balance pour trouver un double !</div>
+
+      <div class="balance-equation">
+        <span class="num left" id="val-left">7</span>
+        <span class="op">+</span>
+        <span class="num right" id="val-right">9</span>
+        <span class="double-badge" id="double-badge">&nbsp;</span>
+      </div>
+
+      <div class="balance-scene">
+        <div class="platform" id="lever">
+          <div class="tray tray-left">
+            <div class="balls" id="balls-left"></div>
+          </div>
+          <div class="beam"></div>
+          <div class="tray tray-right">
+            <div class="balls" id="balls-right"></div>
+          </div>
+        </div>
+        <div class="fulcrum"></div>
+      </div>
+
+      <div class="slider-row">
+        <button class="arrow-btn" id="btn-left">◀</button>
+        <input type="range" id="slider" min="0" max="20" value="7" />
+        <button class="arrow-btn" id="btn-right">▶</button>
+      </div>
+
+      <div class="answer-row">
+        <span class="op">=</span>
+        <input
+          type="number"
+          id="answer"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="?"
+        />
+        <button id="validate">OK</button>
+        <button id="next" class="next-btn hidden">Suivant ▶</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .problem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px dashed #e0e0e0;
+  }
+
+  .problem .num {
+    font-size: 3rem;
+  }
+
+  .problem .op {
+    font-size: 2.5rem;
+  }
+
+  .hint {
+    font-size: 1rem;
+    color: #7c3aed;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+  }
+
+  .balance-equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .num {
+    font-size: 2.2rem;
+    font-weight: 700;
+    min-width: 2ch;
+  }
+
+  .num.left { color: #f472b6; }
+  .num.right { color: #818cf8; }
+
+  .op {
+    font-size: 2rem;
+    color: #7c3aed;
+    font-weight: 700;
+  }
+
+  .double-badge {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #16a34a;
+    margin-left: 0.5rem;
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+
+  .double-badge.visible {
+    opacity: 1;
+  }
+
+  .balance-scene {
+    position: relative;
+    height: 160px;
+    margin-bottom: 1rem;
+  }
+
+  .platform {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 28px;
+    height: 130px;
+    transition: transform 0.4s ease;
+    transform-origin: 50% calc(100% - 4px);
+  }
+
+  .beam {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, #a78bfa, #7c3aed);
+    border-radius: 4px;
+  }
+
+  .tray {
+    position: absolute;
+    bottom: 8px;
+    width: 100px;
+  }
+
+  .tray-left { left: 0; }
+  .tray-right { right: 0; }
+
+  .balls {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .balls :global(.ball) {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: all 0.25s ease;
+  }
+
+  .tray-left .balls :global(.ball) {
+    background: #f472b6;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.15), inset 2px 2px 4px rgba(255,255,255,0.3);
+  }
+
+  .tray-right .balls :global(.ball) {
+    background: #818cf8;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.15), inset 2px 2px 4px rgba(255,255,255,0.3);
+  }
+
+  .fulcrum {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 28px solid #7c3aed;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .arrow-btn {
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .arrow-btn:hover { background: #6d28d9; }
+  .arrow-btn:active { transform: scale(0.93); }
+
+  input[type="range"] {
+    flex: 1;
+    max-width: 200px;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #f472b6, #818cf8);
+    border-radius: 4px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7c3aed;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .answer-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .answer-row .op {
+    font-size: 2.5rem;
+  }
+
+  input[type="number"] {
+    font-size: 2.8rem;
+    font-weight: 700;
+    width: 4ch;
+    text-align: center;
+    border: 3px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 0.2rem;
+    color: #1a1a2e;
+    background: #fef7ff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: #7c3aed;
+  }
+
+  input[type="number"]::placeholder {
+    color: #ccc;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  #validate {
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 0.6rem 1.8rem;
+    border: none;
+    border-radius: 1rem;
+    background: #7c3aed;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  #validate:hover { background: #6d28d9; }
+  #validate:active { transform: scale(0.97); }
+
+  .next-btn {
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 0.6rem 1.8rem;
+    border: none;
+    border-radius: 1rem;
+    background: #16a34a;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .next-btn:hover { background: #15803d; }
+  .next-btn:active { transform: scale(0.97); }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .feedback {
+    font-size: 1.6rem;
+    font-weight: 700;
+    min-height: 2rem;
+  }
+</style>
+
+<script>
+  const problems = [
+    [3, 5], [4, 6], [5, 7], [6, 8], [7, 9], [8, 10],
+    [2, 4], [3, 7], [4, 8], [5, 9], [6, 10], [7, 11],
+    [8, 12], [9, 11], [9, 13], [6, 14], [7, 13], [8, 14],
+  ];
+
+  const origLeft = document.getElementById('orig-left')!;
+  const origRight = document.getElementById('orig-right')!;
+  const valLeft = document.getElementById('val-left')!;
+  const valRight = document.getElementById('val-right')!;
+  const ballsLeft = document.getElementById('balls-left')!;
+  const ballsRight = document.getElementById('balls-right')!;
+  const lever = document.getElementById('lever')!;
+  const slider = document.getElementById('slider') as HTMLInputElement;
+  const btnLeft = document.getElementById('btn-left')!;
+  const btnRight = document.getElementById('btn-right')!;
+  const answerInput = document.getElementById('answer') as HTMLInputElement;
+  const validateBtn = document.getElementById('validate')!;
+  const nextBtn = document.getElementById('next')!;
+  const feedbackEl = document.getElementById('feedback')!;
+  const hintEl = document.getElementById('hint')!;
+  const doubleBadge = document.getElementById('double-badge')!;
+
+  let total: number;
+  let leftCount: number;
+  let origA: number;
+  let origB: number;
+  let lastIndex = -1;
+
+  function renderBalls(container: HTMLElement, count: number) {
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const ball = document.createElement('span');
+      ball.className = 'ball';
+      container.appendChild(ball);
+    }
+  }
+
+  function pickRandom() {
+    let idx: number;
+    do {
+      idx = Math.floor(Math.random() * problems.length);
+    } while (idx === lastIndex && problems.length > 1);
+    lastIndex = idx;
+    return problems[idx];
+  }
+
+  function updateBalance() {
+    const rightCount = total - leftCount;
+
+    valLeft.textContent = String(leftCount);
+    valRight.textContent = String(rightCount);
+
+    renderBalls(ballsLeft, leftCount);
+    renderBalls(ballsRight, rightCount);
+
+    slider.value = String(leftCount);
+
+    const diff = leftCount - rightCount;
+    const maxAngle = 15;
+    const angle = (diff / Math.max(total, 1)) * maxAngle;
+    lever.style.transform = `rotate(${angle}deg)`;
+
+    if (leftCount === rightCount) {
+      doubleBadge.textContent = 'C\u2019est un double !';
+      doubleBadge.classList.add('visible');
+      hintEl.textContent = `${leftCount} + ${leftCount} = ${total} !`;
+    } else {
+      doubleBadge.textContent = '\u00a0';
+      doubleBadge.classList.remove('visible');
+      hintEl.textContent = 'Utilise la balance pour trouver un double !';
+    }
+  }
+
+  function setInteractive(enabled: boolean) {
+    slider.disabled = !enabled;
+    (btnLeft as HTMLButtonElement).disabled = !enabled;
+    (btnRight as HTMLButtonElement).disabled = !enabled;
+    answerInput.disabled = !enabled;
+  }
+
+  function nextProblem() {
+    const [a, b] = pickRandom();
+    if (Math.random() > 0.5) {
+      origA = b; origB = a;
+    } else {
+      origA = a; origB = b;
+    }
+
+    total = origA + origB;
+    leftCount = origA;
+
+    origLeft.textContent = String(origA);
+    origRight.textContent = String(origB);
+
+    slider.max = String(total);
+    answerInput.value = '';
+    feedbackEl.textContent = '';
+    answerInput.style.borderColor = '';
+    setInteractive(true);
+    validateBtn.classList.remove('hidden');
+    nextBtn.classList.add('hidden');
+
+    updateBalance();
+    answerInput.focus();
+  }
+
+  function check() {
+    const val = parseInt(answerInput.value, 10);
+    if (isNaN(val)) {
+      answerInput.focus();
+      return;
+    }
+
+    if (val === total) {
+      feedbackEl.textContent = 'Bravo !!!';
+      feedbackEl.style.color = '#16a34a';
+      answerInput.style.borderColor = '#16a34a';
+      setInteractive(false);
+      validateBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+      nextBtn.focus();
+    } else {
+      feedbackEl.textContent = 'Essaie encore !';
+      feedbackEl.style.color = '#dc2626';
+      answerInput.style.borderColor = '#dc2626';
+      answerInput.value = '';
+      answerInput.focus();
+    }
+  }
+
+  slider.addEventListener('input', () => {
+    leftCount = parseInt(slider.value, 10);
+    updateBalance();
+  });
+
+  btnLeft.addEventListener('click', () => {
+    if (leftCount > 0) { leftCount--; updateBalance(); }
+  });
+
+  btnRight.addEventListener('click', () => {
+    if (leftCount < total) { leftCount++; updateBalance(); }
+  });
+
+  validateBtn.addEventListener('click', check);
+  nextBtn.addEventListener('click', nextProblem);
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') check();
+  });
+
+  nextProblem();
+</script>

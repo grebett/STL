@@ -1,0 +1,295 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Les doubles">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">← Retour</a>
+
+    <div class="score">
+      <span id="streak">0</span> d'affilée !
+    </div>
+
+    <div class="exercise">
+      <div class="dots-row">
+        <div class="dots-group" id="dots-left"></div>
+        <div class="dots-group" id="dots-right"></div>
+      </div>
+
+      <div class="equation">
+        <span class="number" id="num-left">3</span>
+        <span class="operator">+</span>
+        <span class="number" id="num-right">3</span>
+        <span class="operator">=</span>
+        <input
+          type="number"
+          id="answer"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="?"
+        />
+      </div>
+
+      <div class="buttons">
+        <button id="validate">Vérifier</button>
+        <button id="next" class="hidden">Suivant ▶</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .score {
+    font-size: 1.2rem;
+    color: #7c3aed;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .exercise {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .dots-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    min-height: 80px;
+    align-items: center;
+  }
+
+  .dots-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    max-width: 120px;
+  }
+
+  .dots-group :global(.dot) {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dots-group:first-child :global(.dot) {
+    background: #f472b6;
+  }
+
+  .dots-group:last-child :global(.dot) {
+    background: #818cf8;
+  }
+
+  .equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .number {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    min-width: 2ch;
+  }
+
+  .operator {
+    font-size: 3rem;
+    font-weight: 400;
+    color: #7c3aed;
+  }
+
+  input {
+    font-size: 3.5rem;
+    font-weight: 700;
+    width: 4ch;
+    text-align: center;
+    border: 3px solid #e0e0e0;
+    border-radius: 1rem;
+    padding: 0.2rem;
+    color: #1a1a2e;
+    background: #fef7ff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    border-color: #7c3aed;
+  }
+
+  input::placeholder {
+    color: #ccc;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+  }
+
+  button {
+    font-size: 1.4rem;
+    font-weight: 600;
+    padding: 0.8rem 2.5rem;
+    border: none;
+    border-radius: 1rem;
+    background: #7c3aed;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  button:hover {
+    background: #6d28d9;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  #next {
+    background: #16a34a;
+  }
+
+  #next:hover {
+    background: #15803d;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .feedback {
+    margin-top: 1.2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    min-height: 2.5rem;
+  }
+</style>
+
+<script>
+  const doubles = [
+    [1, 1], [2, 2], [3, 3], [4, 4], [5, 5],
+    [6, 6], [7, 7], [8, 8], [9, 9], [10, 10],
+    [11, 11], [12, 12], [13, 13], [14, 14], [15, 15],
+  ];
+
+  const numLeft = document.getElementById('num-left')!;
+  const numRight = document.getElementById('num-right')!;
+  const dotsLeft = document.getElementById('dots-left')!;
+  const dotsRight = document.getElementById('dots-right')!;
+  const answer = document.getElementById('answer') as HTMLInputElement;
+  const validateBtn = document.getElementById('validate')!;
+  const nextBtn = document.getElementById('next')!;
+  const feedback = document.getElementById('feedback')!;
+  const streakEl = document.getElementById('streak')!;
+
+  let current: [number, number];
+  let lastIndex = -1;
+  let streak = 0;
+
+  function renderDots(container: HTMLElement, count: number) {
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      container.appendChild(dot);
+    }
+  }
+
+  function pickRandom() {
+    let idx: number;
+    do {
+      idx = Math.floor(Math.random() * doubles.length);
+    } while (idx === lastIndex && doubles.length > 1);
+    lastIndex = idx;
+    return doubles[idx];
+  }
+
+  function nextExercise() {
+    current = pickRandom() as [number, number];
+    numLeft.textContent = String(current[0]);
+    numRight.textContent = String(current[1]);
+    renderDots(dotsLeft, current[0]);
+    renderDots(dotsRight, current[1]);
+    answer.value = '';
+    feedback.textContent = '';
+    answer.style.borderColor = '';
+    answer.disabled = false;
+    validateBtn.classList.remove('hidden');
+    nextBtn.classList.add('hidden');
+    answer.focus();
+  }
+
+  function check() {
+    const val = parseInt(answer.value, 10);
+    const expected = current[0] + current[1];
+
+    if (isNaN(val)) {
+      answer.focus();
+      return;
+    }
+
+    if (val === expected) {
+      streak++;
+      streakEl.textContent = String(streak);
+      feedback.textContent = 'Bravo !!!';
+      feedback.style.color = '#16a34a';
+      answer.style.borderColor = '#16a34a';
+      answer.disabled = true;
+      validateBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+      nextBtn.focus();
+    } else {
+      streak = 0;
+      streakEl.textContent = '0';
+      feedback.textContent = 'Essaie encore !';
+      feedback.style.color = '#dc2626';
+      answer.style.borderColor = '#dc2626';
+      answer.value = '';
+      answer.focus();
+    }
+  }
+
+  validateBtn.addEventListener('click', check);
+  nextBtn.addEventListener('click', nextExercise);
+  answer.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') check();
+  });
+
+  nextExercise();
+</script>

@@ -1,0 +1,309 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="La balance">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">← Retour</a>
+
+    <div class="card">
+      <div class="total-picker">
+        Total :
+        <button class="total-btn" data-total="10">10</button>
+        <button class="total-btn active" data-total="20">20</button>
+        <button class="total-btn" data-total="30">30</button>
+      </div>
+
+      <div class="equation">
+        <span class="num left" id="val-left">10</span>
+        <span class="op">+</span>
+        <span class="num right" id="val-right">10</span>
+        <span class="op">=</span>
+        <span class="num total" id="val-total">20</span>
+      </div>
+
+      <div class="balance-scene">
+        <div class="platform" id="lever">
+          <div class="tray tray-left">
+            <div class="balls" id="balls-left"></div>
+          </div>
+          <div class="beam"></div>
+          <div class="tray tray-right">
+            <div class="balls" id="balls-right"></div>
+          </div>
+        </div>
+        <div class="fulcrum"></div>
+      </div>
+
+      <div class="slider-row">
+        <button class="arrow-btn" id="btn-left">◀</button>
+        <input type="range" id="slider" min="0" max="20" value="10" />
+        <button class="arrow-btn" id="btn-right">▶</button>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .total-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .total-btn {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.4rem 0.9rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 0.6rem;
+    background: white;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .total-btn.active {
+    border-color: #7c3aed;
+    background: #7c3aed;
+    color: white;
+  }
+
+  .equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .num {
+    font-size: 2.8rem;
+    font-weight: 700;
+    min-width: 2ch;
+  }
+
+  .num.left { color: #f472b6; }
+  .num.right { color: #818cf8; }
+  .num.total { color: #7c3aed; }
+
+  .op {
+    font-size: 2.2rem;
+    color: #7c3aed;
+  }
+
+  .balance-scene {
+    position: relative;
+    height: 180px;
+    margin-bottom: 1.5rem;
+  }
+
+  .platform {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 30px;
+    height: 150px;
+    transition: transform 0.4s ease;
+    transform-origin: 50% calc(100% - 4px);
+  }
+
+  .beam {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, #a78bfa, #7c3aed);
+    border-radius: 4px;
+  }
+
+  .tray {
+    position: absolute;
+    bottom: 8px;
+    width: 110px;
+  }
+
+  .tray-left { left: 0; }
+  .tray-right { right: 0; }
+
+  .balls {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .balls :global(.ball) {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: all 0.25s ease;
+  }
+
+  .tray-left .balls :global(.ball) {
+    background: #f472b6;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.15), inset 2px 2px 4px rgba(255,255,255,0.3);
+  }
+
+  .tray-right .balls :global(.ball) {
+    background: #818cf8;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.15), inset 2px 2px 4px rgba(255,255,255,0.3);
+  }
+
+  .fulcrum {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 30px solid #7c3aed;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    justify-content: center;
+  }
+
+  .arrow-btn {
+    font-size: 1.4rem;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .arrow-btn:hover { background: #6d28d9; }
+  .arrow-btn:active { transform: scale(0.93); }
+
+  input[type="range"] {
+    flex: 1;
+    max-width: 240px;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #f472b6, #818cf8);
+    border-radius: 4px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7c3aed;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+</style>
+
+<script>
+  let total = 20;
+  let leftCount = 10;
+
+  const valLeft = document.getElementById('val-left')!;
+  const valRight = document.getElementById('val-right')!;
+  const valTotal = document.getElementById('val-total')!;
+  const ballsLeft = document.getElementById('balls-left')!;
+  const ballsRight = document.getElementById('balls-right')!;
+  const lever = document.getElementById('lever')!;
+  const slider = document.getElementById('slider') as HTMLInputElement;
+  const btnLeft = document.getElementById('btn-left')!;
+  const btnRight = document.getElementById('btn-right')!;
+  const totalBtns = document.querySelectorAll('.total-btn');
+
+  function renderBalls(container: HTMLElement, count: number) {
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const ball = document.createElement('span');
+      ball.className = 'ball';
+      container.appendChild(ball);
+    }
+  }
+
+  function update() {
+    const rightCount = total - leftCount;
+
+    valLeft.textContent = String(leftCount);
+    valRight.textContent = String(rightCount);
+    valTotal.textContent = String(total);
+
+    renderBalls(ballsLeft, leftCount);
+    renderBalls(ballsRight, rightCount);
+
+    slider.value = String(leftCount);
+    slider.max = String(total);
+
+    const diff = leftCount - rightCount;
+    const maxAngle = 15;
+    const angle = (diff / Math.max(total, 1)) * maxAngle;
+    lever.style.transform = `rotate(${angle}deg)`;
+  }
+
+  slider.addEventListener('input', () => {
+    leftCount = parseInt(slider.value, 10);
+    update();
+  });
+
+  btnLeft.addEventListener('click', () => {
+    if (leftCount > 0) { leftCount--; update(); }
+  });
+
+  btnRight.addEventListener('click', () => {
+    if (leftCount < total) { leftCount++; update(); }
+  });
+
+  totalBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      totalBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      total = parseInt((btn as HTMLElement).dataset.total!, 10);
+      leftCount = total / 2;
+      update();
+    });
+  });
+
+  update();
+</script>
