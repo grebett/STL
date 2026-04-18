@@ -2,9 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Maths avec Estelle">
+<Layout title="Maths">
   <main>
-    <h1>Maths avec Estelle</h1>
+    <h1>Apprends les Maths avec <span class="name" id="child-name"></span></h1>
     <nav>
       <a href={`${import.meta.env.BASE_URL}vases`} class="card">
         <span class="icon">🧪</span>
@@ -22,6 +22,10 @@ import Layout from '../layouts/Layout.astro';
         <span class="icon">💡</span>
         <span class="label">L'exercice</span>
       </a>
+      <a href={`${import.meta.env.BASE_URL}palmares`} class="card">
+        <span class="icon">🏆</span>
+        <span class="label">Palmares</span>
+      </a>
     </nav>
   </main>
 </Layout>
@@ -36,6 +40,16 @@ import Layout from '../layouts/Layout.astro';
     font-size: 2rem;
     margin-bottom: 2rem;
     color: #7c3aed;
+  }
+
+  .name {
+    cursor: pointer;
+    border-bottom: 2px dashed #a78bfa;
+    transition: border-color 0.15s;
+  }
+
+  .name:hover {
+    border-color: #7c3aed;
   }
 
   nav {
@@ -73,3 +87,25 @@ import Layout from '../layouts/Layout.astro';
     font-weight: 600;
   }
 </style>
+
+<script>
+  const nameEl = document.getElementById('child-name')!;
+
+  function askName() {
+    const name = prompt('Comment tu t\u2019appelles ?')?.trim();
+    if (name) {
+      localStorage.setItem('maths-child-name', name);
+      nameEl.textContent = name;
+    }
+    return name;
+  }
+
+  const saved = localStorage.getItem('maths-child-name');
+  if (saved) {
+    nameEl.textContent = saved;
+  } else {
+    askName();
+  }
+
+  nameEl.addEventListener('click', askName);
+</script>

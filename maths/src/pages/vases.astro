@@ -15,6 +15,11 @@ import Layout from '../layouts/Layout.astro';
         <span class="num total" id="val-total">20</span>
       </div>
 
+      <div class="dots-row">
+        <div class="dots-group left" id="dots-left"></div>
+        <div class="dots-group right" id="dots-right"></div>
+      </div>
+
       <canvas id="canvas" width="460" height="320"></canvas>
 
       <div class="slider-row">
@@ -80,6 +85,35 @@ import Layout from '../layouts/Layout.astro';
     font-size: 2.2rem;
     color: #7c3aed;
   }
+
+  .dots-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .dots-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-start;
+    justify-self: center;
+  }
+
+  .dots-group :global(.dot-group) {
+    display: flex;
+    gap: 3px;
+  }
+
+  .dots-group :global(.dot) {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+
+  .dots-group.left :global(.dot) { background: #f472b6; }
+  .dots-group.right :global(.dot) { background: #818cf8; }
 
   canvas {
     width: 100%;
@@ -194,6 +228,8 @@ import Layout from '../layouts/Layout.astro';
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
 
+  const dotsLeft = document.getElementById('dots-left')!;
+  const dotsRight = document.getElementById('dots-right')!;
   const valLeft = document.getElementById('val-left')!;
   const valRight = document.getElementById('val-right')!;
   const valTotal = document.getElementById('val-total')!;
@@ -331,6 +367,32 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  function renderDots(container: HTMLElement, count: number) {
+    container.innerHTML = '';
+    const fullGroups = Math.floor(count / 5);
+    const remainder = count % 5;
+    for (let g = 0; g < fullGroups; g++) {
+      const group = document.createElement('span');
+      group.className = 'dot-group';
+      for (let i = 0; i < 5; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        group.appendChild(dot);
+      }
+      container.appendChild(group);
+    }
+    if (remainder > 0) {
+      const group = document.createElement('span');
+      group.className = 'dot-group';
+      for (let i = 0; i < remainder; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        group.appendChild(dot);
+      }
+      container.appendChild(group);
+    }
+  }
+
   function renderNumber(el: HTMLElement, n: number) {
     if (n < 10) {
       el.innerHTML = `<ruby>${n}<rt class="rt-u">u</rt></ruby>`;
@@ -346,6 +408,8 @@ import Layout from '../layouts/Layout.astro';
     renderNumber(valLeft, targetLeft);
     renderNumber(valRight, right);
     renderNumber(valTotal, total);
+    renderDots(dotsLeft, targetLeft);
+    renderDots(dotsRight, right);
     slider.value = String(targetLeft);
     slider.max = String(total);
   }

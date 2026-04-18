@@ -6,11 +6,12 @@ import Layout from '../layouts/Layout.astro';
   <main>
     <a href={import.meta.env.BASE_URL} class="back">←</a>
 
-    <div class="score">
-      <span id="streak">0</span> d'affilée !
-    </div>
-
     <div class="exercise">
+      <div class="difficulty">
+        <label for="difficulty">Difficulté : <span id="diff-val">10</span></label>
+        <input type="range" id="difficulty" min="10" max="50" value="10" step="10" />
+      </div>
+
       <div class="dots-row">
         <div class="dots-group" id="dots-left"></div>
         <div class="dots-group" id="dots-right"></div>
@@ -45,8 +46,15 @@ import Layout from '../layouts/Layout.astro';
         <button class="numkey ok" data-key="ok">OK</button>
       </div>
 
-      <div class="buttons">
-        <button id="next" class="hidden">Suivant ▶</button>
+      <div class="status-bar">
+        <div class="streak-col">
+          <div class="streak-info">
+            <span class="streak-flame" id="flame">🔥</span>
+            <span class="streak-count" id="streak">0</span>
+          </div>
+          <div class="stars" id="stars"></div>
+        </div>
+        <button id="next" class="next-btn hidden">Suivant ▶</button>
       </div>
 
     </div>
@@ -67,11 +75,72 @@ import Layout from '../layouts/Layout.astro';
     overflow: hidden;
   }
 
-.score {
-    font-size: 1.2rem;
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.8rem;
+    min-height: 48px;
+  }
+
+  .streak-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .streak-info {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: #7c3aed;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+  }
+
+  .streak-flame {
+    font-size: 1.4rem;
+    transition: transform 0.3s;
+  }
+
+  .streak-flame.hot {
+    animation: flame-pulse 0.5s ease;
+  }
+
+  @keyframes flame-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+  }
+
+  .streak-count {
+    font-size: 1.4rem;
+    min-width: 1.5ch;
+  }
+
+  .stars {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+
+  .difficulty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .difficulty label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7c3aed;
+  }
+
+  .difficulty input[type="range"] {
+    width: 100%;
+    accent-color: #7c3aed;
   }
 
   .exercise {
@@ -94,7 +163,7 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    align-items: center;
+    align-items: flex-start;
     max-width: 140px;
   }
 
@@ -127,7 +196,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .number {
-    font-size: 3.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
     color: #1a1a2e;
     min-width: 2ch;
@@ -139,19 +208,23 @@ import Layout from '../layouts/Layout.astro';
   .number :global(.rt-u) { color: #7c3aed; }
 
   .operator {
-    font-size: 3rem;
+    font-size: 2.8rem;
     font-weight: 400;
     color: #7c3aed;
   }
 
   input {
-    font-size: 3.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
-    width: 4ch;
+    width: 3ch;
     text-align: center;
     border: 3px solid #e0e0e0;
-    border-radius: 1rem;
-    padding: 0.2rem;
+    border-radius: 0.8rem;
+    padding: 0;
+    line-height: 1;
+    vertical-align: middle;
+    font-family: inherit;
+    margin-top: 0.45rem;
     color: #1a1a2e;
     background: #fef7ff;
     outline: none;
@@ -175,39 +248,20 @@ import Layout from '../layouts/Layout.astro';
     -moz-appearance: textfield;
   }
 
-  .buttons {
-    display: flex;
-    gap: 0.8rem;
-    justify-content: center;
-  }
-
-  button {
-    font-size: 1.4rem;
-    font-weight: 600;
-    padding: 0.8rem 2.5rem;
+  .next-btn {
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0.6rem 1.5rem;
     border: none;
-    border-radius: 1rem;
-    background: #7c3aed;
+    border-radius: 0.8rem;
+    background: #16a34a;
     color: white;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
   }
 
-  button:hover {
-    background: #6d28d9;
-  }
-
-  button:active {
-    transform: scale(0.97);
-  }
-
-  #next {
-    background: #16a34a;
-  }
-
-  #next:hover {
-    background: #15803d;
-  }
+  .next-btn:hover { background: #15803d; }
+  .next-btn:active { transform: scale(0.97); }
 
   .numpad {
     display: grid;
@@ -251,7 +305,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .hidden {
-    display: none !important;
+    visibility: hidden;
   }
 
   .toast {
@@ -259,26 +313,29 @@ import Layout from '../layouts/Layout.astro';
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    font-size: 2.5rem;
-    font-weight: 800;
-    padding: 1rem 2rem;
-    border-radius: 1rem;
+    font-size: 4rem;
+    font-weight: 900;
+    padding: 0.6rem 2.5rem;
+    border-radius: 1.5rem;
     pointer-events: none;
     z-index: 9998;
     opacity: 0;
-    transition: none;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    letter-spacing: 2px;
   }
 
   .toast.show {
-    animation: toast-pop 1.5s ease forwards;
+    animation: toast-pop 1.8s cubic-bezier(.17,.67,.35,1.2) forwards;
   }
 
   @keyframes toast-pop {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-    25% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    75% { opacity: 1; }
-    100% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-8deg); opacity: 0; }
+    12% { transform: translate(-50%, -50%) scale(1.4) rotate(3deg); opacity: 1; }
+    20% { transform: translate(-50%, -50%) scale(0.9) rotate(-2deg); }
+    28% { transform: translate(-50%, -50%) scale(1.15) rotate(1deg); }
+    36% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    70% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -70%) scale(1.3) rotate(0deg); opacity: 0; }
   }
 </style>
 
@@ -311,11 +368,13 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  const doubles = [
-    [1, 1], [2, 2], [3, 3], [4, 4], [5, 5],
-    [6, 6], [7, 7], [8, 8], [9, 9], [10, 10],
-    [11, 11], [12, 12], [13, 13], [14, 14], [15, 15],
-  ];
+  function buildDoubles(max: number) {
+    return Array.from({ length: max }, (_, i) => [i + 1, i + 1] as [number, number]);
+  }
+
+  const diffSlider = document.getElementById('difficulty') as HTMLInputElement;
+  const diffVal = document.getElementById('diff-val')!;
+  let doubles = buildDoubles(parseInt(diffSlider.value, 10));
 
   const numLeft = document.getElementById('num-left')!;
   const numRight = document.getElementById('num-right')!;
@@ -334,10 +393,49 @@ import Layout from '../layouts/Layout.astro';
     toast.classList.add('show');
   }
   const streakEl = document.getElementById('streak')!;
+  const starsEl = document.getElementById('stars')!;
+  const flameEl = document.getElementById('flame')!;
 
   let current: [number, number];
   let lastIndex = -1;
   let streak = 0;
+  let sessionStars = 0;
+  const COOLDOWN_MASTERED = 3;
+  const COOLDOWN_FAILED = 1;
+  const MASTERY_THRESHOLD = 3;
+  let staleThreshold = doubles.length;
+  let tracker = doubles.map(() => ({ correctStreak: 0, cooldown: 0, lastSeen: 0 }));
+  let pickCount = 0;
+
+  let diffTimeout: ReturnType<typeof setTimeout>;
+  diffSlider.addEventListener('input', () => {
+    diffVal.textContent = diffSlider.value;
+    clearTimeout(diffTimeout);
+    diffTimeout = setTimeout(() => {
+      const max = parseInt(diffSlider.value, 10);
+      doubles = buildDoubles(max);
+      staleThreshold = doubles.length;
+      tracker = doubles.map(() => ({ correctStreak: 0, cooldown: 0, lastSeen: 0 }));
+      pickCount = 0;
+      lastIndex = -1;
+      nextExercise();
+    }, 300);
+  });
+
+  function updateStars() {
+    starsEl.textContent = Array(sessionStars).fill('\u2B50').join('');
+  }
+
+  function saveBest(game: string, streak: number, stars: number) {
+    const data = JSON.parse(localStorage.getItem('maths-data') || '{}');
+    if (!data[game]) data[game] = { bestStreak: 0, totalStars: 0, sessions: [] };
+    const g = data[game];
+    if (streak > g.bestStreak) g.bestStreak = streak;
+    g.totalStars += stars;
+    g.sessions.unshift({ streak, stars, date: new Date().toISOString() });
+    if (g.sessions.length > 20) g.sessions.length = 20;
+    localStorage.setItem('maths-data', JSON.stringify(data));
+  }
 
   function renderNumber(el: HTMLElement, n: number) {
     if (n < 10) {
@@ -376,11 +474,36 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function pickRandom() {
-    let idx: number;
-    do {
-      idx = Math.floor(Math.random() * doubles.length);
-    } while (idx === lastIndex && doubles.length > 1);
+    pickCount++;
+    let staleIdx = -1;
+    let stalestAge = 0;
+    for (let i = 0; i < doubles.length; i++) {
+      const age = pickCount - tracker[i].lastSeen;
+      if (i !== lastIndex && age > staleThreshold && age > stalestAge) {
+        stalestAge = age;
+        staleIdx = i;
+      }
+    }
+    if (staleIdx !== -1) {
+      tracker[staleIdx].cooldown = 0;
+      lastIndex = staleIdx;
+      tracker[staleIdx].lastSeen = pickCount;
+      tracker.forEach(t => { if (t.cooldown > 0) t.cooldown--; });
+      return doubles[staleIdx];
+    }
+    let eligible = [];
+    for (let i = 0; i < doubles.length; i++) {
+      if (tracker[i].cooldown === 0 && i !== lastIndex) eligible.push(i);
+    }
+    if (eligible.length === 0) {
+      for (let i = 0; i < doubles.length; i++) {
+        if (i !== lastIndex) eligible.push(i);
+      }
+    }
+    const idx = eligible[Math.floor(Math.random() * eligible.length)];
     lastIndex = idx;
+    tracker[idx].lastSeen = pickCount;
+    tracker.forEach(t => { if (t.cooldown > 0) t.cooldown--; });
     return doubles[idx];
   }
 
@@ -407,16 +530,35 @@ import Layout from '../layouts/Layout.astro';
     }
 
     if (val === expected) {
+      tracker[lastIndex].correctStreak++;
+      if (tracker[lastIndex].correctStreak >= MASTERY_THRESHOLD) {
+        tracker[lastIndex].cooldown = COOLDOWN_MASTERED;
+        tracker[lastIndex].correctStreak = 0;
+      }
       streak++;
       streakEl.textContent = String(streak);
-      showToast('Bravo', '#16a34a');
+      flameEl.classList.remove('hot');
+      void flameEl.offsetWidth;
+      flameEl.classList.add('hot');
+      if (streak > 0 && streak % 10 === 0) {
+        sessionStars++;
+        updateStars();
+        showToast('\u2B50', '#f59e0b');
+      } else {
+        showToast('Bravo', '#16a34a');
+      }
       confetti();
       answer.style.borderColor = '#16a34a';
       answer.disabled = true;
       nextBtn.classList.remove('hidden');
       nextBtn.focus();
     } else {
+      tracker[lastIndex].correctStreak = 0;
+      tracker[lastIndex].cooldown = COOLDOWN_FAILED;
+      if (streak > 0) saveBest('doubles', streak, sessionStars);
       streak = 0;
+      sessionStars = 0;
+      updateStars();
       streakEl.textContent = '0';
       showToast('Essaie encore', '#dc2626');
       answer.style.borderColor = '#dc2626';
@@ -440,6 +582,10 @@ import Layout from '../layouts/Layout.astro';
   nextBtn.addEventListener('click', nextExercise);
   answer.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') check();
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (streak > 0) saveBest('doubles', streak, sessionStars);
   });
 
   nextExercise();

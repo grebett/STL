@@ -1,0 +1,265 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Palmares">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">←</a>
+
+    <div class="trophy" id="trophy">🏆</div>
+    <h1 id="title">Palmares</h1>
+
+    <div class="game-card pink" id="card-doubles">
+      <div class="card-header">
+        <span class="card-icon">🧮</span>
+        <span class="card-title">Les doubles</span>
+      </div>
+      <div class="card-body">
+        <div class="stat">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-val" id="best-doubles">0</span>
+          <span class="stat-label">record</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-val" id="stars-doubles">0</span>
+          <span class="stat-label">étoiles</span>
+        </div>
+      </div>
+      <div class="card-sessions" id="sessions-doubles"></div>
+    </div>
+
+    <div class="game-card purple" id="card-exercice">
+      <div class="card-header">
+        <span class="card-icon">💡</span>
+        <span class="card-title">L'exercice</span>
+      </div>
+      <div class="card-body">
+        <div class="stat">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-val" id="best-exercice">0</span>
+          <span class="stat-label">record</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-val" id="stars-exercice">0</span>
+          <span class="stat-label">étoiles</span>
+        </div>
+      </div>
+      <div class="card-sessions" id="sessions-exercice"></div>
+    </div>
+
+    <button class="reset-btn" id="reset">Tout effacer</button>
+  </main>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1rem 1rem 0.5rem;
+    width: 100%;
+    max-width: 500px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    gap: 0.8rem;
+  }
+
+  .trophy {
+    font-size: 3.5rem;
+    margin-top: 0.3rem;
+    animation: trophy-float 3s ease-in-out infinite;
+    filter: drop-shadow(0 6px 16px rgba(245, 158, 11, 0.35));
+  }
+
+  @keyframes trophy-float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin: 0;
+    background: linear-gradient(135deg, #7c3aed, #e879f9, #f59e0b);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .game-card {
+    width: 100%;
+    border-radius: 1.5rem;
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .game-card.pink {
+    background: linear-gradient(135deg, #fdf2f8, #fce7f3, #fbcfe8);
+    box-shadow: 0 8px 32px rgba(244, 114, 182, 0.2);
+  }
+
+  .game-card.purple {
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe, #ddd6fe);
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #1a1a2e;
+  }
+
+  .card-body {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+
+  .stat-icon {
+    font-size: 1.6rem;
+  }
+
+  .stat-val {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #1a1a2e;
+  }
+
+  .pink .stat-val {
+    color: #db2777;
+  }
+
+  .purple .stat-val {
+    color: #7c3aed;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+  }
+
+  .card-sessions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    justify-content: center;
+    min-height: 1.6rem;
+  }
+
+  .card-sessions :global(.pill) {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2rem;
+    background: rgba(255,255,255,0.7);
+    color: #555;
+    backdrop-filter: blur(4px);
+  }
+
+  .card-sessions :global(.pill.best) {
+    background: rgba(245, 158, 11, 0.2);
+    color: #b45309;
+  }
+
+  .reset-btn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 1rem;
+    border: 1.5px solid #eee;
+    border-radius: 2rem;
+    background: transparent;
+    color: #ccc;
+    cursor: pointer;
+    margin-top: auto;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+  }
+</style>
+
+<script>
+  const titleEl = document.getElementById('title')!;
+  const resetBtn = document.getElementById('reset')!;
+
+  interface Session { streak: number; stars: number; date: string }
+  interface GameData { bestStreak: number; totalStars: number; sessions: Session[] }
+
+  function renderSessions(containerId: string, sessions: Session[], bestStreak: number) {
+    const el = document.getElementById(containerId)!;
+    if (!sessions.length) {
+      el.innerHTML = '<span style="color:#aaa;font-size:0.8rem;font-style:italic">Aucune partie</span>';
+      return;
+    }
+    el.innerHTML = sessions.slice(0, 8).map((s) => {
+      const d = new Date(s.date);
+      const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+      const isBest = s.streak === bestStreak && bestStreak > 0;
+      const stars = s.stars > 0 ? ' ' + '\u2B50'.repeat(Math.min(s.stars, 3)) : '';
+      return `<span class="pill ${isBest ? 'best' : ''}">🔥${s.streak}${stars} · ${dateStr}</span>`;
+    }).join('');
+  }
+
+  function render() {
+    const childName = localStorage.getItem('maths-child-name');
+    if (childName) titleEl.textContent = `Palmares de ${childName}`;
+
+    const data: Record<string, GameData> = JSON.parse(localStorage.getItem('maths-data') || '{}');
+
+    const doubles = data['doubles'];
+    const exercice = data['exercice'];
+
+    document.getElementById('best-doubles')!.textContent = String(doubles?.bestStreak || 0);
+    document.getElementById('stars-doubles')!.textContent = String(doubles?.totalStars || 0);
+    renderSessions('sessions-doubles', doubles?.sessions || [], doubles?.bestStreak || 0);
+
+    document.getElementById('best-exercice')!.textContent = String(exercice?.bestStreak || 0);
+    document.getElementById('stars-exercice')!.textContent = String(exercice?.totalStars || 0);
+    renderSessions('sessions-exercice', exercice?.sessions || [], exercice?.bestStreak || 0);
+  }
+
+  resetBtn.addEventListener('click', () => {
+    if (confirm('Effacer tous les scores ?')) {
+      localStorage.removeItem('maths-data');
+      render();
+    }
+  });
+
+  render();
+</script>
