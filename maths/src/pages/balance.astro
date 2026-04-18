@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="La balance">
   <main>
-    <a href={import.meta.env.BASE_URL} class="back">← Retour</a>
+    <a href={import.meta.env.BASE_URL} class="back">←</a>
 
     <div class="card">
       <div class="total-picker">
@@ -47,21 +47,17 @@ import Layout from '../layouts/Layout.astro';
 <style>
   main {
     text-align: center;
-    padding: 1.5rem;
+    padding: 1rem;
     width: 100%;
     max-width: 520px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  .back {
-    display: inline-block;
-    margin-bottom: 1rem;
-    color: #7c3aed;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-  }
-
-  .card {
+.card {
     background: white;
     border-radius: 1.5rem;
     padding: 1.5rem;
@@ -278,7 +274,7 @@ import Layout from '../layouts/Layout.astro';
 
     const diff = leftCount - rightCount;
     const maxAngle = 15;
-    const angle = (diff / Math.max(total, 1)) * maxAngle;
+    const angle = -(diff / Math.max(total, 1)) * maxAngle;
     lever.style.transform = `rotate(${angle}deg)`;
   }
 

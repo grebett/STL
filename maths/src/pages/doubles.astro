@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Les doubles">
   <main>
-    <a href={import.meta.env.BASE_URL} class="back">← Retour</a>
+    <a href={import.meta.env.BASE_URL} class="back">←</a>
 
     <div class="score">
       <span id="streak">0</span> d'affilée !
@@ -24,40 +24,50 @@ import Layout from '../layouts/Layout.astro';
         <input
           type="number"
           id="answer"
-          inputmode="numeric"
+          inputmode="none"
           autocomplete="off"
           placeholder="?"
         />
       </div>
 
+      <div class="numpad">
+        <button class="numkey" data-key="1">1</button>
+        <button class="numkey" data-key="2">2</button>
+        <button class="numkey" data-key="3">3</button>
+        <button class="numkey" data-key="4">4</button>
+        <button class="numkey" data-key="5">5</button>
+        <button class="numkey" data-key="6">6</button>
+        <button class="numkey" data-key="7">7</button>
+        <button class="numkey" data-key="8">8</button>
+        <button class="numkey" data-key="9">9</button>
+        <button class="numkey del" data-key="del">←</button>
+        <button class="numkey" data-key="0">0</button>
+        <button class="numkey ok" data-key="ok">OK</button>
+      </div>
+
       <div class="buttons">
-        <button id="validate">Vérifier</button>
         <button id="next" class="hidden">Suivant ▶</button>
       </div>
 
-      <div class="feedback" id="feedback"></div>
     </div>
   </main>
+  <div class="toast" id="toast"></div>
 </Layout>
 
 <style>
   main {
     text-align: center;
-    padding: 1.5rem;
+    padding: 1rem;
     width: 100%;
     max-width: 500px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  .back {
-    display: inline-block;
-    margin-bottom: 1rem;
-    color: #7c3aed;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-  }
-
-  .score {
+.score {
     font-size: 1.2rem;
     color: #7c3aed;
     font-weight: 600;
@@ -189,19 +199,108 @@ import Layout from '../layouts/Layout.astro';
     background: #15803d;
   }
 
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    max-width: 280px;
+    margin: 1rem auto;
+  }
+
+  .numkey {
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 0.7rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 0.8rem;
+    background: #fef7ff;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.1s;
+  }
+
+  .numkey:active {
+    transform: scale(0.95);
+    background: #ede9fe;
+  }
+
+  .numkey.del {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+
+  .numkey.ok {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+  }
+
+  .numkey.ok:active {
+    background: #6d28d9;
+  }
+
   .hidden {
     display: none !important;
   }
 
-  .feedback {
-    margin-top: 1.2rem;
-    font-size: 1.8rem;
-    font-weight: 700;
-    min-height: 2.5rem;
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 2.5rem;
+    font-weight: 800;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+    transition: none;
+  }
+
+  .toast.show {
+    animation: toast-pop 1.5s ease forwards;
+  }
+
+  @keyframes toast-pop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    25% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    75% { opacity: 1; }
+    100% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
   }
 </style>
 
 <script>
+  function confetti() {
+    const colors = ['#f472b6', '#818cf8', '#7c3aed', '#16a34a', '#facc15', '#fb923c'];
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      const size = Math.random() * 8 + 4;
+      el.style.cssText = `
+        position:fixed;z-index:9999;pointer-events:none;
+        width:${size}px;height:${size}px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        left:${Math.random() * 100}vw;top:-10px;
+        opacity:1;
+      `;
+      document.body.appendChild(el);
+      const x = (Math.random() - 0.5) * 200;
+      const y = Math.random() * 600 + 400;
+      const r = Math.random() * 720 - 360;
+      const dur = Math.random() * 1000 + 1500;
+      el.animate([
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { opacity: 1, offset: 0.7 },
+        { transform: `translate(${x}px,${y}px) rotate(${r}deg)`, opacity: 0 },
+      ], { duration: dur, easing: 'cubic-bezier(.25,.46,.45,.94)' })
+        .onfinish = () => el.remove();
+    }
+  }
+
   const doubles = [
     [1, 1], [2, 2], [3, 3], [4, 4], [5, 5],
     [6, 6], [7, 7], [8, 8], [9, 9], [10, 10],
@@ -213,9 +312,17 @@ import Layout from '../layouts/Layout.astro';
   const dotsLeft = document.getElementById('dots-left')!;
   const dotsRight = document.getElementById('dots-right')!;
   const answer = document.getElementById('answer') as HTMLInputElement;
-  const validateBtn = document.getElementById('validate')!;
+  const numpad = document.querySelectorAll('.numkey');
   const nextBtn = document.getElementById('next')!;
-  const feedback = document.getElementById('feedback')!;
+  const toast = document.getElementById('toast')!;
+
+  function showToast(text: string, color: string) {
+    toast.textContent = text;
+    toast.style.color = color;
+    toast.classList.remove('show');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+  }
   const streakEl = document.getElementById('streak')!;
 
   let current: [number, number];
@@ -247,10 +354,8 @@ import Layout from '../layouts/Layout.astro';
     renderDots(dotsLeft, current[0]);
     renderDots(dotsRight, current[1]);
     answer.value = '';
-    feedback.textContent = '';
     answer.style.borderColor = '';
     answer.disabled = false;
-    validateBtn.classList.remove('hidden');
     nextBtn.classList.add('hidden');
     answer.focus();
   }
@@ -267,25 +372,34 @@ import Layout from '../layouts/Layout.astro';
     if (val === expected) {
       streak++;
       streakEl.textContent = String(streak);
-      feedback.textContent = 'Bravo !!!';
-      feedback.style.color = '#16a34a';
+      showToast('Bravo', '#16a34a');
+      confetti();
       answer.style.borderColor = '#16a34a';
       answer.disabled = true;
-      validateBtn.classList.add('hidden');
       nextBtn.classList.remove('hidden');
       nextBtn.focus();
     } else {
       streak = 0;
       streakEl.textContent = '0';
-      feedback.textContent = 'Essaie encore !';
-      feedback.style.color = '#dc2626';
+      showToast('Essaie encore', '#dc2626');
       answer.style.borderColor = '#dc2626';
       answer.value = '';
       answer.focus();
     }
   }
 
-  validateBtn.addEventListener('click', check);
+  numpad.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = (btn as HTMLElement).dataset.key!;
+      if (key === 'ok') {
+        if (answer.disabled) { nextExercise(); } else { check(); }
+      } else if (key === 'del') {
+        answer.value = answer.value.slice(0, -1);
+      } else if (!answer.disabled) {
+        answer.value += key;
+      }
+    });
+  });
   nextBtn.addEventListener('click', nextExercise);
   answer.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') check();

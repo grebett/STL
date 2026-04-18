@@ -1,0 +1,379 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Les vases">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">←</a>
+
+    <div class="card">
+      <div class="equation">
+        <span class="num left" id="val-left">10</span>
+        <span class="op">+</span>
+        <span class="num right" id="val-right">10</span>
+        <span class="op">=</span>
+        <span class="num total" id="val-total">20</span>
+      </div>
+
+      <canvas id="canvas" width="460" height="320"></canvas>
+
+      <div class="slider-row">
+        <button class="arrow-btn" id="btn-left">◀</button>
+        <input type="range" id="slider" min="0" max="20" value="10" />
+        <button class="arrow-btn" id="btn-right">▶</button>
+      </div>
+
+      <div class="total-picker">
+        Total :
+        <button class="total-btn" data-total="10">10</button>
+        <button class="total-btn active" data-total="20">20</button>
+        <button class="total-btn" data-total="30">30</button>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1rem;
+    width: 100%;
+    max-width: 520px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+.card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .equation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .num {
+    font-size: 2.8rem;
+    font-weight: 700;
+    min-width: 2ch;
+  }
+
+  .num.left { color: #f472b6; }
+  .num.right { color: #818cf8; }
+  .num.total { color: #7c3aed; }
+
+  .op {
+    font-size: 2.2rem;
+    color: #7c3aed;
+  }
+
+  canvas {
+    width: 100%;
+    max-width: 460px;
+    aspect-ratio: 46 / 32;
+    border-radius: 0.8rem;
+    background: #f8f4ff;
+    display: block;
+    margin: 0 auto 1rem;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .arrow-btn {
+    font-size: 1.4rem;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .arrow-btn:hover { background: #6d28d9; }
+  .arrow-btn:active { transform: scale(0.93); }
+
+  input[type="range"] {
+    flex: 1;
+    max-width: 240px;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #f472b6, #818cf8);
+    border-radius: 4px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7c3aed;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .total-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .total-btn {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.4rem 0.9rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 0.6rem;
+    background: white;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .total-btn.active {
+    border-color: #7c3aed;
+    background: #7c3aed;
+    color: white;
+  }
+</style>
+
+<script>
+  import Box2DFactory from 'liquidfun-wasm';
+
+  const SCALE = 50;
+  const W = 460;
+  const H = 320;
+  const PARTICLE_RADIUS = 0.08;
+
+  const LEFT_CX = 2.2;
+  const RIGHT_CX = W / SCALE - 2.2;
+  const CONTAINER_W = 1.8;
+  const CONTAINER_H = 5.0;
+  const FLOOR_Y = 0.4;
+
+  function getParticlesPerUnit() {
+    const cols = Math.floor((CONTAINER_W - 0.3) / (PARTICLE_RADIUS * 2.1));
+    const maxRows = Math.floor((CONTAINER_H * 1.05) / (PARTICLE_RADIUS * 2 * 0.87));
+    return Math.floor((cols * maxRows) / total);
+  }
+
+  let total = 20;
+  let targetLeft = 10;
+
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  const valLeft = document.getElementById('val-left')!;
+  const valRight = document.getElementById('val-right')!;
+  const valTotal = document.getElementById('val-total')!;
+  const slider = document.getElementById('slider') as HTMLInputElement;
+  const btnLeftEl = document.getElementById('btn-left')!;
+  const btnRightEl = document.getElementById('btn-right')!;
+  const totalBtns = document.querySelectorAll('.total-btn');
+
+  function toCanvasX(x: number) { return x * SCALE; }
+  function toCanvasY(y: number) { return H - y * SCALE; }
+
+  const box2d = await Box2DFactory({
+    locateFile: (url: string) => `${import.meta.env.BASE_URL}lib/${url}`,
+  });
+
+  const {
+    b2World, b2Vec2, b2BodyDef, b2PolygonShape,
+    b2ParticleSystemDef, b2ParticleGroupDef, b2ParticleDef,
+    b2_waterParticle,
+  } = box2d;
+
+  const WALL_T = 0.08;
+
+  const gravity = new b2Vec2(0, -10);
+  const world = new b2World(gravity);
+
+  function createWall(cx: number, cy: number, hw: number, hh: number) {
+    const bd = new b2BodyDef();
+    const pos = new b2Vec2(cx, cy);
+    bd.set_position(pos);
+    const body = world.CreateBody(bd);
+    const shape = new b2PolygonShape();
+    shape.SetAsBox(hw, hh);
+    body.CreateFixture(shape, 0);
+    box2d.destroy(pos);
+    box2d.destroy(shape);
+  }
+
+  function createContainer(cx: number) {
+    const hw = CONTAINER_W / 2;
+    createWall(cx, FLOOR_Y - WALL_T, hw + WALL_T, WALL_T);
+    createWall(cx - hw - WALL_T, FLOOR_Y + CONTAINER_H / 2, WALL_T, CONTAINER_H / 2 + WALL_T);
+    createWall(cx + hw + WALL_T, FLOOR_Y + CONTAINER_H / 2, WALL_T, CONTAINER_H / 2 + WALL_T);
+  }
+
+  createContainer(LEFT_CX);
+  createContainer(RIGHT_CX);
+
+  const psd = new b2ParticleSystemDef();
+  psd.set_radius(PARTICLE_RADIUS);
+  psd.set_dampingStrength(0.5);
+  psd.set_gravityScale(1.0);
+  psd.set_density(1.5);
+
+  const particleSystem = world.CreateParticleSystem(psd);
+
+  function fillContainer(cx: number, unitCount: number, r: number, g: number, b: number) {
+    if (unitCount <= 0) return;
+    const ppu = getParticlesPerUnit();
+    const hw = CONTAINER_W / 2 - 0.2;
+    const cols = Math.floor(hw * 2 / (PARTICLE_RADIUS * 2.1));
+    const totalParticles = unitCount * ppu;
+    const rows = Math.ceil(totalParticles / cols);
+    const hh = Math.max(rows * PARTICLE_RADIUS * 1.05, 0.3);
+
+    const shape = new b2PolygonShape();
+    const center = new b2Vec2(cx, FLOOR_Y + hh + 0.15);
+    shape.SetAsBox(hw, hh, center, 0);
+
+    const pgd = new b2ParticleGroupDef();
+    pgd.set_shape(shape);
+    pgd.get_color().Set(r, g, b, 200);
+    particleSystem.CreateParticleGroup(pgd);
+
+    box2d.destroy(center);
+    box2d.destroy(shape);
+    box2d.destroy(pgd);
+  }
+
+  function destroyAllParticles() {
+    const count = particleSystem.GetParticleCount();
+    for (let i = count - 1; i >= 0; i--) {
+      particleSystem.DestroyParticle(i);
+    }
+    world.Step(1/60, 1, 1, 1);
+  }
+
+  function rebuildParticles() {
+    destroyAllParticles();
+    fillContainer(LEFT_CX, targetLeft, 244, 114, 182);
+    fillContainer(RIGHT_CX, total - targetLeft, 129, 140, 248);
+    for (let i = 0; i < 120; i++) {
+      world.Step(1/60, 6, 2, 3);
+    }
+  }
+
+  function drawContainer(cx: number) {
+    const hw = CONTAINER_W / 2;
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(toCanvasX(cx - hw), toCanvasY(FLOOR_Y + CONTAINER_H));
+    ctx.lineTo(toCanvasX(cx - hw), toCanvasY(FLOOR_Y));
+    ctx.lineTo(toCanvasX(cx + hw), toCanvasY(FLOOR_Y));
+    ctx.lineTo(toCanvasX(cx + hw), toCanvasY(FLOOR_Y + CONTAINER_H));
+    ctx.stroke();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawContainer(LEFT_CX);
+    drawContainer(RIGHT_CX);
+
+    const count = particleSystem.GetParticleCount();
+    if (count === 0) return;
+
+    const posPtr = box2d.getPointer(particleSystem.GetPositionBuffer());
+    const colPtr = box2d.getPointer(particleSystem.GetColorBuffer());
+    const r = PARTICLE_RADIUS * SCALE * 1.4;
+
+    for (let i = 0; i < count; i++) {
+      const px = box2d.HEAPF32[(posPtr >> 2) + i * 2];
+      const py = box2d.HEAPF32[(posPtr >> 2) + i * 2 + 1];
+      const cr = box2d.HEAPU8[colPtr + i * 4];
+      const cg = box2d.HEAPU8[colPtr + i * 4 + 1];
+      const cb = box2d.HEAPU8[colPtr + i * 4 + 2];
+
+      ctx.beginPath();
+      ctx.arc(toCanvasX(px), toCanvasY(py), r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},0.8)`;
+      ctx.fill();
+    }
+  }
+
+  function updateUI() {
+    const right = total - targetLeft;
+    valLeft.textContent = String(targetLeft);
+    valRight.textContent = String(right);
+    valTotal.textContent = String(total);
+    slider.value = String(targetLeft);
+    slider.max = String(total);
+  }
+
+  function onSliderChange(newLeft: number) {
+    if (newLeft === targetLeft) return;
+    targetLeft = newLeft;
+    updateUI();
+    rebuildParticles();
+  }
+
+  slider.addEventListener('input', () => {
+    onSliderChange(parseInt(slider.value, 10));
+  });
+
+  btnLeftEl.addEventListener('click', () => {
+    if (targetLeft > 0) onSliderChange(targetLeft - 1);
+  });
+
+  btnRightEl.addEventListener('click', () => {
+    if (targetLeft < total) onSliderChange(targetLeft + 1);
+  });
+
+  totalBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      totalBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      total = parseInt((btn as HTMLElement).dataset.total!, 10);
+      targetLeft = Math.round(total / 2);
+      updateUI();
+      rebuildParticles();
+    });
+  });
+
+  rebuildParticles();
+  updateUI();
+
+  function loop() {
+    const particleIterations = world.CalculateReasonableParticleIterations(1/60);
+    world.Step(1/60, 6, 2, particleIterations);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+</script>
