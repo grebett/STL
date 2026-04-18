@@ -92,15 +92,20 @@ import Layout from '../layouts/Layout.astro';
 
   .dots-group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-    max-width: 120px;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    max-width: 140px;
+  }
+
+  .dots-group :global(.dot-group) {
+    display: flex;
+    gap: 4px;
   }
 
   .dots-group :global(.dot) {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     display: inline-block;
   }
@@ -127,6 +132,11 @@ import Layout from '../layouts/Layout.astro';
     color: #1a1a2e;
     min-width: 2ch;
   }
+
+  .number :global(ruby) { ruby-align: center; }
+  .number :global(rt) { font-size: 0.35em; font-weight: 600; }
+  .number :global(.rt-d) { color: #f59e0b; }
+  .number :global(.rt-u) { color: #7c3aed; }
 
   .operator {
     font-size: 3rem;
@@ -329,12 +339,39 @@ import Layout from '../layouts/Layout.astro';
   let lastIndex = -1;
   let streak = 0;
 
+  function renderNumber(el: HTMLElement, n: number) {
+    if (n < 10) {
+      el.innerHTML = `<ruby>${n}<rt class="rt-u">u</rt></ruby>`;
+    } else {
+      const d = Math.floor(n / 10);
+      const u = n % 10;
+      el.innerHTML = `<ruby>${d}<rt class="rt-d">d</rt></ruby><ruby>${u}<rt class="rt-u">u</rt></ruby>`;
+    }
+  }
+
   function renderDots(container: HTMLElement, count: number) {
     container.innerHTML = '';
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      container.appendChild(dot);
+    const fullGroups = Math.floor(count / 5);
+    const remainder = count % 5;
+    for (let g = 0; g < fullGroups; g++) {
+      const group = document.createElement('span');
+      group.className = 'dot-group';
+      for (let i = 0; i < 5; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        group.appendChild(dot);
+      }
+      container.appendChild(group);
+    }
+    if (remainder > 0) {
+      const group = document.createElement('span');
+      group.className = 'dot-group';
+      for (let i = 0; i < remainder; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        group.appendChild(dot);
+      }
+      container.appendChild(group);
     }
   }
 
@@ -349,8 +386,8 @@ import Layout from '../layouts/Layout.astro';
 
   function nextExercise() {
     current = pickRandom() as [number, number];
-    numLeft.textContent = String(current[0]);
-    numRight.textContent = String(current[1]);
+    renderNumber(numLeft, current[0]);
+    renderNumber(numRight, current[1]);
     renderDots(dotsLeft, current[0]);
     renderDots(dotsRight, current[1]);
     answer.value = '';

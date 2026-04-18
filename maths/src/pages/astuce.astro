@@ -140,6 +140,11 @@ import Layout from '../layouts/Layout.astro';
   .num.left { color: #f472b6; }
   .num.right { color: #818cf8; }
 
+  .num :global(ruby) { ruby-align: center; }
+  .num :global(rt) { font-size: 0.35em; font-weight: 600; }
+  .num :global(.rt-d) { color: #f59e0b; }
+  .num :global(.rt-u) { color: #7c3aed; }
+
   .op {
     font-size: 2rem;
     color: #7c3aed;
@@ -197,13 +202,18 @@ import Layout from '../layouts/Layout.astro';
   .balls {
     display: flex;
     flex-wrap: wrap-reverse;
-    gap: 4px;
+    gap: 6px;
     justify-content: center;
   }
 
+  .balls :global(.ball-group) {
+    display: flex;
+    gap: 2px;
+  }
+
   .balls :global(.ball) {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     transition: all 0.25s ease;
   }
@@ -481,12 +491,39 @@ import Layout from '../layouts/Layout.astro';
   let origB: number;
   let lastIndex = -1;
 
+  function renderNumber(el: HTMLElement, n: number) {
+    if (n < 10) {
+      el.innerHTML = `<ruby>${n}<rt class="rt-u">u</rt></ruby>`;
+    } else {
+      const d = Math.floor(n / 10);
+      const u = n % 10;
+      el.innerHTML = `<ruby>${d}<rt class="rt-d">d</rt></ruby><ruby>${u}<rt class="rt-u">u</rt></ruby>`;
+    }
+  }
+
   function renderBalls(container: HTMLElement, count: number) {
     container.innerHTML = '';
-    for (let i = 0; i < count; i++) {
-      const ball = document.createElement('span');
-      ball.className = 'ball';
-      container.appendChild(ball);
+    const fullGroups = Math.floor(count / 5);
+    const remainder = count % 5;
+    for (let g = 0; g < fullGroups; g++) {
+      const group = document.createElement('span');
+      group.className = 'ball-group';
+      for (let i = 0; i < 5; i++) {
+        const ball = document.createElement('span');
+        ball.className = 'ball';
+        group.appendChild(ball);
+      }
+      container.appendChild(group);
+    }
+    if (remainder > 0) {
+      const group = document.createElement('span');
+      group.className = 'ball-group';
+      for (let i = 0; i < remainder; i++) {
+        const ball = document.createElement('span');
+        ball.className = 'ball';
+        group.appendChild(ball);
+      }
+      container.appendChild(group);
     }
   }
 
@@ -502,8 +539,8 @@ import Layout from '../layouts/Layout.astro';
   function updateBalance() {
     const rightCount = total - leftCount;
 
-    valLeft.textContent = String(leftCount);
-    valRight.textContent = String(rightCount);
+    renderNumber(valLeft, leftCount);
+    renderNumber(valRight, rightCount);
 
     renderBalls(ballsLeft, leftCount);
     renderBalls(ballsRight, rightCount);
@@ -544,8 +581,8 @@ import Layout from '../layouts/Layout.astro';
     total = origA + origB;
     leftCount = origA;
 
-    origLeft.textContent = String(origA);
-    origRight.textContent = String(origB);
+    renderNumber(origLeft, origA);
+    renderNumber(origRight, origB);
 
     slider.max = String(total);
     answerInput.value = '';

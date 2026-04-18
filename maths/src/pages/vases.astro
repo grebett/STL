@@ -71,6 +71,11 @@ import Layout from '../layouts/Layout.astro';
   .num.right { color: #818cf8; }
   .num.total { color: #7c3aed; }
 
+  .num :global(ruby) { ruby-align: center; }
+  .num :global(rt) { font-size: 0.35em; font-weight: 600; }
+  .num :global(.rt-d) { color: #f59e0b; }
+  .num :global(.rt-u) { color: #7c3aed; }
+
   .op {
     font-size: 2.2rem;
     color: #7c3aed;
@@ -326,11 +331,21 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  function renderNumber(el: HTMLElement, n: number) {
+    if (n < 10) {
+      el.innerHTML = `<ruby>${n}<rt class="rt-u">u</rt></ruby>`;
+    } else {
+      const d = Math.floor(n / 10);
+      const u = n % 10;
+      el.innerHTML = `<ruby>${d}<rt class="rt-d">d</rt></ruby><ruby>${u}<rt class="rt-u">u</rt></ruby>`;
+    }
+  }
+
   function updateUI() {
     const right = total - targetLeft;
-    valLeft.textContent = String(targetLeft);
-    valRight.textContent = String(right);
-    valTotal.textContent = String(total);
+    renderNumber(valLeft, targetLeft);
+    renderNumber(valRight, right);
+    renderNumber(valTotal, total);
     slider.value = String(targetLeft);
     slider.max = String(total);
   }
