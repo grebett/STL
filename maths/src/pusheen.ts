@@ -38,5 +38,6 @@ export function showPusheen(container: HTMLElement) {
     container.classList.remove('show');
     void container.offsetWidth;
     container.classList.add('show');
+    setTimeout(() => container.classList.remove('show'), 5000);
   });
 }

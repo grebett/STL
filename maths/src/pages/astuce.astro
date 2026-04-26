@@ -458,31 +458,37 @@ import Layout from '../layouts/Layout.astro';
 
   .pusheen-popup {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
+    inset: 0;
     z-index: 9997;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
-    filter: drop-shadow(0 4px 20px rgba(124, 58, 237, 0.3));
   }
 
   .pusheen-popup :global(img) {
     max-height: 160px;
     border-radius: 1rem;
+    filter: drop-shadow(0 4px 20px rgba(124, 58, 237, 0.3));
+    transform: scale(0);
   }
 
   .pusheen-popup.show {
+    opacity: 1;
+  }
+
+  .pusheen-popup.show :global(img) {
     animation: pusheen-pop 5s cubic-bezier(.17,.67,.35,1.2) forwards;
   }
 
   @keyframes pusheen-pop {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    10% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-    18% { transform: translate(-50%, -50%) scale(0.95); }
-    25% { transform: translate(-50%, -50%) scale(1); }
-    75% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    100% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
+    0% { transform: scale(0); opacity: 0; }
+    10% { transform: scale(1.1); opacity: 1; }
+    18% { transform: scale(0.95); }
+    25% { transform: scale(1); }
+    75% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.8) translateY(-20%); opacity: 0; }
   }
 </style>
 
