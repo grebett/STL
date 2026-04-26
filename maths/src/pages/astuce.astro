@@ -97,8 +97,8 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 0.8rem;
-    min-height: 48px;
+    margin-top: 0.4rem;
+    min-height: 40px;
   }
 
   .streak-col {
@@ -145,7 +145,7 @@ import Layout from '../layouts/Layout.astro';
   .card {
     background: white;
     border-radius: 1.5rem;
-    padding: 1.5rem;
+    padding: 1rem 1.2rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   }
 
@@ -158,11 +158,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .problem .num {
-    font-size: 2.8rem;
+    font-size: 2.2rem;
   }
 
   .problem .op {
-    font-size: 2.8rem;
+    font-size: 2.2rem;
   }
 
   .balance-equation {
@@ -174,7 +174,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .num {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     min-width: 2ch;
   }
@@ -188,17 +188,17 @@ import Layout from '../layouts/Layout.astro';
   .num :global(.rt-u) { color: #7c3aed; }
 
   .op {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #7c3aed;
     font-weight: 700;
   }
 
   .double-badge {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: #16a34a;
     text-align: center;
-    min-height: 1.5rem;
+    min-height: 1.2rem;
     transition: opacity 0.3s;
     opacity: 0;
   }
@@ -209,16 +209,16 @@ import Layout from '../layouts/Layout.astro';
 
   .balance-scene {
     position: relative;
-    height: 140px;
-    margin-bottom: 0.5rem;
+    height: 100px;
+    margin-bottom: 0.3rem;
   }
 
   .platform {
     position: absolute;
     left: 10%;
     right: 10%;
-    bottom: 28px;
-    height: 130px;
+    bottom: 22px;
+    height: 90px;
     transition: transform 0.4s ease;
     transform-origin: 50% calc(100% - 4px);
   }
@@ -255,8 +255,8 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .balls :global(.ball) {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     transition: all 0.25s ease;
   }
@@ -278,9 +278,9 @@ import Layout from '../layouts/Layout.astro';
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 18px solid transparent;
-    border-right: 18px solid transparent;
-    border-bottom: 28px solid #7c3aed;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-bottom: 22px solid #7c3aed;
   }
 
   .slider-row {
@@ -288,13 +288,13 @@ import Layout from '../layouts/Layout.astro';
     align-items: center;
     gap: 0.8rem;
     justify-content: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
   }
 
   .arrow-btn {
-    font-size: 1.2rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1rem;
+    width: 34px;
+    height: 34px;
     border: none;
     border-radius: 50%;
     background: #7c3aed;
@@ -332,7 +332,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   input[type="number"] {
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     font-weight: 700;
     width: 3ch;
     text-align: center;
@@ -342,7 +342,7 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1;
     vertical-align: middle;
     font-family: inherit;
-    margin-top: 0.45rem;
+    margin-top: 0.3rem;
     color: #1a1a2e;
     background: #fef7ff;
     outline: none;
@@ -369,15 +369,15 @@ import Layout from '../layouts/Layout.astro';
   .numpad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    max-width: 280px;
-    margin: 1rem auto;
+    gap: 0.35rem;
+    max-width: 240px;
+    margin: 0.5rem auto;
   }
 
   .numkey {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    padding: 0.7rem;
+    padding: 0.45rem;
     border: 2px solid #e0e0e0;
     border-radius: 0.8rem;
     background: #fef7ff;
