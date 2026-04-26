@@ -1,6 +1,8 @@
+import { EMBEDDED_PUSHEEN } from './pusheen-embedded';
+
 const API_KEY = 'q1Cxqwu40v4xFHGjOIA2z2t0hARgH5Qm';
 const CACHE_KEY = 'maths-pusheen-gifs';
-const LOCAL_COUNT = 10;
+const LOCAL_COUNT = 9;
 const FETCH_TIMEOUT = 3000;
 const TERMS = ['pusheen celebrate', 'pusheen happy', 'pusheen party', 'pusheen star', 'pusheen dance'];
 
@@ -21,6 +23,7 @@ function getLocalPusheen(): string {
 }
 
 async function fetchFromApi(): Promise<string | null> {
+  if (!navigator.onLine) return null;
   const term = TERMS[Math.floor(Math.random() * TERMS.length)];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
@@ -43,7 +46,12 @@ async function fetchFromApi(): Promise<string | null> {
   return null;
 }
 
+function getEmbeddedPusheen(): string {
+  return EMBEDDED_PUSHEEN[Math.floor(Math.random() * EMBEDDED_PUSHEEN.length)];
+}
+
 export async function fetchRandomPusheen(): Promise<string> {
+  if (!navigator.onLine) return getEmbeddedPusheen();
   const url = await fetchFromApi();
   if (url) return url;
   const cached = getCached();
