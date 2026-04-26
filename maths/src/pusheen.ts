@@ -1,6 +1,7 @@
 const API_KEY = 'q1Cxqwu40v4xFHGjOIA2z2t0hARgH5Qm';
 const CACHE_KEY = 'maths-pusheen-gifs';
 const LOCAL_COUNT = 10;
+const FETCH_TIMEOUT = 3000;
 const TERMS = ['pusheen celebrate', 'pusheen happy', 'pusheen party', 'pusheen star', 'pusheen dance'];
 
 function getCached(): string[] {
@@ -13,37 +14,55 @@ function addToCache(urls: string[]) {
   localStorage.setItem(CACHE_KEY, JSON.stringify(all));
 }
 
-export async function fetchRandomPusheen(): Promise<string | null> {
+function getLocalPusheen(): string {
+  const base = import.meta.env.BASE_URL;
+  const idx = Math.floor(Math.random() * LOCAL_COUNT) + 1;
+  return `${base}pusheen/${idx}.gif`;
+}
+
+async function fetchFromApi(): Promise<string | null> {
   const term = TERMS[Math.floor(Math.random() * TERMS.length)];
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
   try {
     const res = await fetch(
-      `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(term)}&limit=25&rating=g`
+      `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(term)}&limit=25&rating=g`,
+      { signal: controller.signal }
     );
-    if (!res.ok) throw new Error();
+    clearTimeout(timer);
+    if (!res.ok) return null;
     const data = await res.json();
     const urls: string[] = data.data.map((g: any) => g.images.fixed_height.url);
     if (urls.length) {
       addToCache(urls);
       return urls[Math.floor(Math.random() * urls.length)];
     }
-  } catch {}
+  } catch {
+    clearTimeout(timer);
+  }
+  return null;
+}
+
+export async function fetchRandomPusheen(): Promise<string> {
+  const url = await fetchFromApi();
+  if (url) return url;
   const cached = getCached();
   if (cached.length) return cached[Math.floor(Math.random() * cached.length)];
   return getLocalPusheen();
 }
 
-function getLocalPusheen(): string {
-  const idx = Math.floor(Math.random() * LOCAL_COUNT) + 1;
-  return `${import.meta.env.BASE_URL}pusheen/${idx}.gif`;
-}
-
 export function showPusheen(container: HTMLElement) {
+  const localFallback = getLocalPusheen();
+  container.innerHTML = `<img src="${localFallback}" alt="Pusheen" />`;
+  container.classList.remove('show');
+  void container.offsetWidth;
+  container.classList.add('show');
+  setTimeout(() => container.classList.remove('show'), 5000);
+
   fetchRandomPusheen().then(url => {
-    if (!url) return;
-    container.innerHTML = `<img src="${url}" alt="Pusheen" />`;
-    container.classList.remove('show');
-    void container.offsetWidth;
-    container.classList.add('show');
-    setTimeout(() => container.classList.remove('show'), 5000);
+    if (url !== localFallback) {
+      const img = container.querySelector('img');
+      if (img) img.src = url;
+    }
   });
 }
