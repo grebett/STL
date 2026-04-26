@@ -379,6 +379,11 @@ import Layout from '../layouts/Layout.astro';
   import { showPusheen } from '../pusheen';
 
   const pusheenPopup = document.getElementById('pusheen-popup')!;
+  const easyMode = (() => {
+    try { return !!JSON.parse(localStorage.getItem('maths-settings') || '{}')['easyMode']; }
+    catch { return false; }
+  })();
+  const STAR_INTERVAL = easyMode ? 5 : 10;
 
   function confetti() {
     const colors = ['#f472b6', '#818cf8', '#7c3aed', '#16a34a', '#facc15', '#fb923c'];
@@ -580,7 +585,7 @@ import Layout from '../layouts/Layout.astro';
       flameEl.classList.remove('hot');
       void flameEl.offsetWidth;
       flameEl.classList.add('hot');
-      if (streak > 0 && streak % 10 === 0) {
+      if (streak > 0 && streak % STAR_INTERVAL === 0) {
         sessionStars++;
         updateStars();
         showPusheen(pusheenPopup);
