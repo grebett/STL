@@ -473,7 +473,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .pusheen-popup.show {
-    animation: pusheen-pop 3s cubic-bezier(.17,.67,.35,1.2) forwards;
+    animation: pusheen-pop 5s cubic-bezier(.17,.67,.35,1.2) forwards;
   }
 
   @keyframes pusheen-pop {
@@ -728,7 +728,6 @@ import Layout from '../layouts/Layout.astro';
       if (streak > 0 && streak % 10 === 0) {
         sessionStars++;
         updateStars();
-        showToast('\u2B50', '#f59e0b');
         showPusheen(pusheenPopup);
       } else {
         showToast('Bravo', '#16a34a');
