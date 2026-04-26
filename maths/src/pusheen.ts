@@ -1,5 +1,6 @@
 const API_KEY = 'q1Cxqwu40v4xFHGjOIA2z2t0hARgH5Qm';
 const CACHE_KEY = 'maths-pusheen-gifs';
+const LOCAL_COUNT = 10;
 const TERMS = ['pusheen celebrate', 'pusheen happy', 'pusheen party', 'pusheen star', 'pusheen dance'];
 
 function getCached(): string[] {
@@ -28,7 +29,12 @@ export async function fetchRandomPusheen(): Promise<string | null> {
   } catch {}
   const cached = getCached();
   if (cached.length) return cached[Math.floor(Math.random() * cached.length)];
-  return null;
+  return getLocalPusheen();
+}
+
+function getLocalPusheen(): string {
+  const idx = Math.floor(Math.random() * LOCAL_COUNT) + 1;
+  return `${import.meta.env.BASE_URL}pusheen/${idx}.gif`;
 }
 
 export function showPusheen(container: HTMLElement) {
