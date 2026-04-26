@@ -52,17 +52,11 @@ export async function fetchRandomPusheen(): Promise<string> {
 }
 
 export function showPusheen(container: HTMLElement) {
-  const localFallback = getLocalPusheen();
-  container.innerHTML = `<img src="${localFallback}" alt="Pusheen" />`;
-  container.classList.remove('show');
-  void container.offsetWidth;
-  container.classList.add('show');
-  setTimeout(() => container.classList.remove('show'), 5000);
-
   fetchRandomPusheen().then(url => {
-    if (url !== localFallback) {
-      const img = container.querySelector('img');
-      if (img) img.src = url;
-    }
+    container.innerHTML = `<img src="${url}" alt="Pusheen" />`;
+    container.classList.remove('show');
+    void container.offsetWidth;
+    container.classList.add('show');
+    setTimeout(() => container.classList.remove('show'), 5000);
   });
 }
