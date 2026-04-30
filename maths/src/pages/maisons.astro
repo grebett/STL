@@ -1,0 +1,647 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="La maison des nombres">
+  <main>
+    <a href={import.meta.env.BASE_URL} class="back">←</a>
+
+    <div class="exercise">
+      <h1>La maison des nombres</h1>
+
+      <div class="level">
+        <label for="level">Niveau : <span id="level-label">3 à 10</span></label>
+        <input type="range" id="level" min="10" max="20" value="10" step="10" />
+      </div>
+
+      <p class="instruction" id="instruction">Complète les cases vides.</p>
+
+      <section class="house" aria-label="Maison du nombre">
+        <div class="roof">
+          <span>Maison du</span>
+          <strong id="target">7</strong>
+        </div>
+        <div class="wall">
+          <div class="rows" id="rows"></div>
+        </div>
+      </section>
+
+      <div class="cards" id="cards" aria-label="Réponses à déplacer"></div>
+
+      <div class="status-bar">
+        <div class="streak-col">
+          <div class="streak-info">
+            <span>Série</span>
+            <strong id="streak">0</strong>
+          </div>
+          <div class="stars" id="stars"></div>
+        </div>
+        <button id="next" class="next-btn hidden">Maison suivante</button>
+      </div>
+    </div>
+  </main>
+  <div class="toast" id="toast"></div>
+  <div class="pusheen-popup" id="pusheen-popup"></div>
+</Layout>
+
+<style>
+  main {
+    text-align: center;
+    padding: 1rem;
+    width: 100%;
+    max-width: 540px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .exercise {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.2rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  h1 {
+    font-size: 1.7rem;
+    color: #7c3aed;
+    margin-bottom: 0.7rem;
+  }
+
+  .level {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .level label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #7c3aed;
+  }
+
+  .level input[type="range"] {
+    width: 100%;
+    accent-color: #7c3aed;
+  }
+
+  .instruction {
+    min-height: 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #4c1d95;
+    margin-bottom: 0.7rem;
+  }
+
+  .house {
+    width: min(100%, 340px);
+    margin: 0 auto 0.9rem;
+    filter: drop-shadow(0 8px 18px rgba(251, 146, 60, 0.22));
+  }
+
+  .roof {
+    position: relative;
+    width: calc(100% - 18px);
+    height: 82px;
+    margin: 0 auto -2px;
+    padding: 1.35rem 0 0.55rem;
+    clip-path: polygon(50% 0, 100% 78%, 100% 100%, 0 100%, 0 78%);
+    background: linear-gradient(135deg, #7c3aed, #a855f7 70%, #c084fc);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    line-height: 1;
+    border-radius: 0.4rem 0.4rem 0 0;
+  }
+
+  .roof span {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .roof strong {
+    font-size: 2.4rem;
+  }
+
+  .wall {
+    background: linear-gradient(180deg, #fff7ed, #ffedd5);
+    border: 4px solid #fb923c;
+    border-top: 0;
+    border-radius: 0 0 1rem 1rem;
+    padding: 0.75rem;
+    max-height: 42dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .rows {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .rows :global(.row) {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto auto;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #9a3412;
+  }
+
+  .rows :global(.term),
+  .rows :global(.drop) {
+    min-height: 42px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+  }
+
+  .rows :global(.term) {
+    border: 2px solid #fed7aa;
+  }
+
+  .rows :global(.drop) {
+    border: 2px dashed #fb923c;
+    color: #fb923c;
+  }
+
+  .rows :global(.drop.ready) {
+    background: #ede9fe;
+    border-color: #7c3aed;
+    transform: scale(1.03);
+  }
+
+  .rows :global(.drop.filled) {
+    border-style: solid;
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #166534;
+    animation: slot-pop 0.2s ease;
+  }
+
+  .rows :global(.drop.wrong) {
+    background: #fee2e2;
+    border-color: #dc2626;
+    color: #991b1b;
+    animation: shake 0.25s ease;
+  }
+
+  @keyframes slot-pop {
+    0% { transform: scale(0.85); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 54px;
+    margin-bottom: 0.8rem;
+  }
+
+  .cards.hard {
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    justify-content: center;
+  }
+
+  .cards :global(.card) {
+    width: 58px;
+    height: 48px;
+    border: 0;
+    border-radius: 0.9rem;
+    background: var(--card-bg, #ede9fe);
+    color: var(--card-text, #4c1d95);
+    font-size: 1.35rem;
+    font-weight: 900;
+    cursor: grab;
+    box-shadow: 0 3px 0 var(--card-shadow, #c4b5fd);
+    touch-action: none;
+    user-select: none;
+  }
+
+  .cards :global(.card:active) {
+    cursor: grabbing;
+  }
+
+  .cards :global(.card.dragging) {
+    opacity: 0.4;
+  }
+
+  .cards :global(.card.small) {
+    width: 50px;
+    height: 46px;
+    border-radius: 0.8rem;
+    font-size: 1.25rem;
+  }
+
+  .status-bar {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .streak-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .streak-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-weight: 800;
+    color: #7c3aed;
+  }
+
+  .streak-info strong {
+    font-size: 1.5rem;
+  }
+
+  .stars {
+    min-height: 1.2rem;
+    color: #f59e0b;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+
+  .next-btn {
+    border: 0;
+    border-radius: 999px;
+    background: #7c3aed;
+    color: white;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .hidden {
+    visibility: hidden;
+  }
+
+  .toast {
+    position: fixed;
+    top: 1.2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    opacity: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 1000;
+    transition: opacity 0.2s, transform 0.2s;
+    background: white;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .pusheen-popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+  }
+
+  .pusheen-popup.show {
+    opacity: 1;
+  }
+
+  .pusheen-popup.show :global(img) {
+    animation: pusheen-pop 5s cubic-bezier(.17,.67,.35,1.2) forwards;
+  }
+
+  @keyframes pusheen-pop {
+    0% { transform: scale(0); opacity: 0; }
+    10% { transform: scale(1.1); opacity: 1; }
+    18% { transform: scale(0.95); }
+    25% { transform: scale(1); }
+    75% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.8) translateY(-20%); opacity: 0; }
+  }
+
+  @media (max-height: 680px) {
+    .exercise { padding: 0.9rem; }
+    h1 { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    .roof { height: 66px; padding-top: 1rem; }
+    .roof strong { font-size: 2rem; }
+    .wall { padding: 0.55rem; }
+    .rows :global(.term), .rows :global(.drop) { min-height: 36px; }
+    .cards :global(.card) { height: 42px; font-size: 1.15rem; }
+    .cards :global(.card.small) { width: 46px; height: 42px; font-size: 1.15rem; }
+    .cards.hard { grid-template-columns: repeat(5, 46px); }
+  }
+</style>
+
+<script>
+  import { showPusheen } from '../pusheen';
+
+  interface Pair { left: number; right: number }
+
+  const level = document.getElementById('level') as HTMLInputElement;
+  const levelLabel = document.getElementById('level-label')!;
+  const instruction = document.getElementById('instruction')!;
+  const targetEl = document.getElementById('target')!;
+  const rowsEl = document.getElementById('rows')!;
+  const cardsEl = document.getElementById('cards')!;
+  const nextBtn = document.getElementById('next')!;
+  const toast = document.getElementById('toast')!;
+  const streakEl = document.getElementById('streak')!;
+  const starsEl = document.getElementById('stars')!;
+  const pusheenPopup = document.getElementById('pusheen-popup')!;
+
+  const easyMode = (() => {
+    try { return !!JSON.parse(localStorage.getItem('maths-settings') || '{}')['easyMode']; }
+    catch { return false; }
+  })();
+  const STAR_INTERVAL = easyMode ? 5 : 10;
+  const HARD_CARD_COUNT = 10;
+
+  let target = 7;
+  let lastTarget = -1;
+  let remaining = 0;
+  let streak = 0;
+  let sessionStars = 0;
+
+  function rand(min: number, max: number) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
+
+  function shuffle<T>(items: T[]) {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function pickTarget() {
+    const max = parseInt(level.value, 10);
+    const min = max === 10 ? 3 : 11;
+    let next = rand(min, max);
+    if (next === lastTarget && max > min) next = next === max ? min : next + 1;
+    lastTarget = next;
+    return next;
+  }
+
+  function buildPairs(sum: number) {
+    return Array.from({ length: sum + 1 }, (_, left) => ({ left, right: sum - left }));
+  }
+
+  function missingCount(totalRows: number) {
+    return Math.min(HARD_CARD_COUNT, Math.max(2, Math.floor(totalRows / 2)));
+  }
+
+  function showToast(text: string, color: string) {
+    toast.textContent = text;
+    toast.style.color = color;
+    toast.classList.remove('show');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+  }
+
+  function confetti() {
+    const colors = ['#f472b6', '#818cf8', '#7c3aed', '#16a34a', '#facc15', '#fb923c'];
+    for (let i = 0; i < 70; i++) {
+      const el = document.createElement('div');
+      const size = Math.random() * 8 + 4;
+      el.style.cssText = `
+        position:fixed;z-index:9999;pointer-events:none;
+        width:${size}px;height:${size}px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        left:${Math.random() * 100}vw;top:-10px;
+        opacity:1;
+      `;
+      document.body.appendChild(el);
+      const x = (Math.random() - 0.5) * 200;
+      const y = Math.random() * 600 + 400;
+      const r = Math.random() * 720 - 360;
+      const dur = Math.random() * 1000 + 1500;
+      el.animate([
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { opacity: 1, offset: 0.7 },
+        { transform: `translate(${x}px,${y}px) rotate(${r}deg)`, opacity: 0 },
+      ], { duration: dur, easing: 'cubic-bezier(.25,.46,.45,.94)' })
+        .onfinish = () => el.remove();
+    }
+  }
+
+  function updateStars() {
+    starsEl.textContent = Array(sessionStars).fill('★').join('');
+  }
+
+  function saveBest(game: string, score: number, stars: number) {
+    const data = JSON.parse(localStorage.getItem('maths-data') || '{}');
+    if (!data[game]) data[game] = { bestStreak: 0, totalStars: 0, sessions: [] };
+    const g = data[game];
+    if (score > g.bestStreak) g.bestStreak = score;
+    g.totalStars += stars;
+    g.sessions.unshift({ streak: score, stars, date: new Date().toISOString() });
+    if (g.sessions.length > 20) g.sessions.length = 20;
+    localStorage.setItem('maths-data', JSON.stringify(data));
+  }
+
+  function resetStreak() {
+    if (streak > 0) saveBest('maisons', streak, sessionStars);
+    streak = 0;
+    sessionStars = 0;
+    streakEl.textContent = '0';
+    updateStars();
+  }
+
+  function renderRows(pairs: Pair[]) {
+    const count = missingCount(pairs.length);
+    remaining = count;
+    const missingRows = new Set(shuffle(pairs.map((_, index) => index)).slice(0, count));
+    rowsEl.innerHTML = pairs.map((pair, index) => {
+      const missing = missingRows.has(index);
+      return `
+        <div class="row">
+          <span class="term">${pair.left}</span>
+          <span>+</span>
+          ${missing
+            ? `<span class="drop" data-answer="${pair.right}">?</span>`
+            : `<span class="term">${pair.right}</span>`}
+          <span>=</span>
+          <span>${target}</span>
+        </div>
+      `;
+    }).join('');
+
+    const answers = pairs.filter((_, index) => missingRows.has(index)).map((pair) => pair.right);
+    renderCards(buildAnswers(answers));
+  }
+
+  function buildAnswers(correctAnswers: number[]) {
+    if (easyMode) return shuffle(correctAnswers);
+
+    const maxAnswer = Math.max(9, target);
+    const answers = new Set(correctAnswers);
+    while (answers.size < HARD_CARD_COUNT) {
+      answers.add(rand(0, maxAnswer));
+    }
+    return [...answers].sort((a, b) => a - b);
+  }
+
+  const cardColors = [
+    ['#fce7f3', '#9d174d', '#f9a8d4'],
+    ['#ede9fe', '#4c1d95', '#c4b5fd'],
+    ['#dbeafe', '#1e3a8a', '#93c5fd'],
+    ['#dcfce7', '#166534', '#86efac'],
+    ['#fef9c3', '#854d0e', '#fde047'],
+    ['#ffedd5', '#9a3412', '#fdba74'],
+  ];
+
+  function renderCards(answers: number[]) {
+    cardsEl.classList.toggle('hard', !easyMode);
+    cardsEl.innerHTML = answers.map((answer, index) => {
+      const [bg, text, shadow] = cardColors[index % cardColors.length];
+      return `
+        <button class="card ${easyMode ? '' : 'small'}" style="--card-bg:${bg};--card-text:${text};--card-shadow:${shadow}" draggable="true" data-answer="${answer}" data-id="card-${index}">${answer}</button>
+      `;
+    }).join('');
+  }
+
+  function newRound() {
+    target = pickTarget();
+    targetEl.textContent = String(target);
+    instruction.textContent = `Complète les cases vides de la maison du ${target}.`;
+    nextBtn.classList.add('hidden');
+    levelLabel.textContent = level.value === '10' ? '3 à 10' : '11 à 20';
+    renderRows(buildPairs(target));
+  }
+
+  function addPoint() {
+    streak++;
+    streakEl.textContent = String(streak);
+
+    if (streak > 0 && streak % STAR_INTERVAL === 0) {
+      sessionStars++;
+      updateStars();
+      showPusheen(pusheenPopup);
+    } else {
+      showToast('Bravo', '#16a34a');
+    }
+  }
+
+  function completeRound() {
+    confetti();
+    showToast('Maison complète', '#16a34a');
+    nextBtn.classList.remove('hidden');
+    nextBtn.focus();
+  }
+
+  function handleDrop(drop: HTMLElement, card: HTMLElement) {
+    if (drop.classList.contains('filled')) return;
+
+    if (drop.dataset.answer === card.dataset.answer) {
+      drop.textContent = card.dataset.answer || '';
+      drop.classList.add('filled');
+      card.remove();
+      addPoint();
+      remaining--;
+      if (remaining === 0) completeRound();
+      return;
+    }
+
+    drop.classList.add('wrong');
+    setTimeout(() => drop.classList.remove('wrong'), 300);
+    resetStreak();
+    showToast('Essaie ailleurs', '#dc2626');
+  }
+
+  let draggedCard: HTMLElement | null = null;
+
+  cardsEl.addEventListener('dragstart', (event) => {
+    const card = (event.target as HTMLElement).closest('.card') as HTMLElement | null;
+    if (!card) return;
+    draggedCard = card;
+    card.classList.add('dragging');
+    event.dataTransfer?.setData('text/plain', card.dataset.answer || '');
+  });
+
+  cardsEl.addEventListener('dragend', () => {
+    draggedCard?.classList.remove('dragging');
+    draggedCard = null;
+  });
+
+  rowsEl.addEventListener('dragover', (event) => {
+    const drop = (event.target as HTMLElement).closest('.drop') as HTMLElement | null;
+    if (!drop || drop.classList.contains('filled')) return;
+    event.preventDefault();
+    drop.classList.add('ready');
+  });
+
+  rowsEl.addEventListener('dragleave', (event) => {
+    const drop = (event.target as HTMLElement).closest('.drop') as HTMLElement | null;
+    drop?.classList.remove('ready');
+  });
+
+  rowsEl.addEventListener('drop', (event) => {
+    const drop = (event.target as HTMLElement).closest('.drop') as HTMLElement | null;
+    if (!drop || !draggedCard) return;
+    event.preventDefault();
+    drop.classList.remove('ready');
+    handleDrop(drop, draggedCard);
+  });
+
+  cardsEl.addEventListener('click', (event) => {
+    const card = (event.target as HTMLElement).closest('.card') as HTMLElement | null;
+    if (!card) return;
+    draggedCard?.classList.remove('dragging');
+    draggedCard = card;
+    card.classList.add('dragging');
+    instruction.textContent = `Choisis la case pour ${card.dataset.answer}.`;
+  });
+
+  rowsEl.addEventListener('click', (event) => {
+    const drop = (event.target as HTMLElement).closest('.drop') as HTMLElement | null;
+    if (!drop || !draggedCard) return;
+    draggedCard.classList.remove('dragging');
+    handleDrop(drop, draggedCard);
+    draggedCard = null;
+  });
+
+  nextBtn.addEventListener('click', newRound);
+  level.addEventListener('input', newRound);
+
+  window.addEventListener('beforeunload', () => {
+    if (streak > 0) saveBest('maisons', streak, sessionStars);
+  });
+
+  newRound();
+</script>
