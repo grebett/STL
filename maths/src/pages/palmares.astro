@@ -29,6 +29,26 @@ import Layout from '../layouts/Layout.astro';
       <div class="card-sessions" id="sessions-doubles"></div>
     </div>
 
+    <div class="game-card orange" id="card-maisons">
+      <div class="card-header">
+        <span class="card-icon">10</span>
+        <span class="card-title">Les maisons</span>
+      </div>
+      <div class="card-body">
+        <div class="stat">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-val" id="best-maisons">0</span>
+          <span class="stat-label">record</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-val" id="stars-maisons">0</span>
+          <span class="stat-label">étoiles</span>
+        </div>
+      </div>
+      <div class="card-sessions" id="sessions-maisons"></div>
+    </div>
+
     <div class="game-card purple" id="card-exercice">
       <div class="card-header">
         <span class="card-icon">💡</span>
@@ -63,7 +83,7 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    overflow-y: auto;
     gap: 0.8rem;
   }
 
@@ -114,6 +134,11 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
   }
 
+  .game-card.orange {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5, #fed7aa);
+    box-shadow: 0 8px 32px rgba(251, 146, 60, 0.18);
+  }
+
   .card-header {
     display: flex;
     align-items: center;
@@ -162,6 +187,10 @@ import Layout from '../layouts/Layout.astro';
 
   .purple .stat-val {
     color: #7c3aed;
+  }
+
+  .orange .stat-val {
+    color: #ea580c;
   }
 
   .stat-label {
@@ -243,11 +272,16 @@ import Layout from '../layouts/Layout.astro';
     const data: Record<string, GameData> = JSON.parse(localStorage.getItem('maths-data') || '{}');
 
     const doubles = data['doubles'];
+    const maisons = data['maisons'];
     const exercice = data['exercice'];
 
     document.getElementById('best-doubles')!.textContent = String(doubles?.bestStreak || 0);
     document.getElementById('stars-doubles')!.textContent = String(doubles?.totalStars || 0);
     renderSessions('sessions-doubles', doubles?.sessions || [], doubles?.bestStreak || 0);
+
+    document.getElementById('best-maisons')!.textContent = String(maisons?.bestStreak || 0);
+    document.getElementById('stars-maisons')!.textContent = String(maisons?.totalStars || 0);
+    renderSessions('sessions-maisons', maisons?.sessions || [], maisons?.bestStreak || 0);
 
     document.getElementById('best-exercice')!.textContent = String(exercice?.bestStreak || 0);
     document.getElementById('stars-exercice')!.textContent = String(exercice?.totalStars || 0);
