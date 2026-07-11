@@ -27,18 +27,17 @@ const { title } = Astro.props;
   }
 
   html {
-    overflow: hidden;
-    height: 100%;
+    min-height: 100%;
   }
 
   body {
     font-family: system-ui, -apple-system, sans-serif;
-    height: 100dvh;
-    overflow: hidden;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     background: #fef7ff;
     color: #1a1a2e;
   }

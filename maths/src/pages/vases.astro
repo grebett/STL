@@ -41,14 +41,13 @@ import Layout from '../layouts/Layout.astro';
 <style>
   main {
     text-align: center;
-    padding: 1rem;
+    padding: 3.5rem 1rem 1rem;
     width: 100%;
     max-width: 520px;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden;
   }
 
 .card {
@@ -199,6 +198,21 @@ import Layout from '../layouts/Layout.astro';
     border-color: #7c3aed;
     background: #7c3aed;
     color: white;
+  }
+
+  @media (max-height: 720px) {
+    main {
+      justify-content: flex-start;
+      padding-top: 3.25rem;
+    }
+
+    .card { padding: 1rem; }
+    .equation { margin-bottom: 0.6rem; }
+    .num { font-size: 2rem; }
+    .op { font-size: 1.7rem; }
+    .dots-row { margin-bottom: 0.6rem; }
+    canvas { margin-bottom: 0.7rem; }
+    .slider-row { margin-bottom: 0.7rem; }
   }
 </style>
 

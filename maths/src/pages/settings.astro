@@ -20,6 +20,36 @@ import Layout from '../layouts/Layout.astro';
         </label>
       </div>
     </div>
+
+    <section class="settings-card points-card" aria-labelledby="points-title">
+      <div class="points-header">
+        <div>
+          <h2 id="points-title">Base de points</h2>
+          <p>Fixe le score de départ après un bug.</p>
+        </div>
+        <button type="button" id="save-points" class="primary-btn">Enregistrer</button>
+      </div>
+
+      <div class="score-grid" id="score-grid">
+        <label class="score-row">
+          <span>Les doubles</span>
+          <input type="number" inputmode="numeric" min="0" step="1" data-game="doubles" />
+        </label>
+        <label class="score-row">
+          <span>Les maisons</span>
+          <input type="number" inputmode="numeric" min="0" step="1" data-game="maisons" />
+        </label>
+        <label class="score-row">
+          <span>L'exercice</span>
+          <input type="number" inputmode="numeric" min="0" step="1" data-game="exercice" />
+        </label>
+      </div>
+
+      <div class="points-actions">
+        <button type="button" id="clear-points" class="ghost-btn">Remettre les points à 0</button>
+        <span id="points-status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
   </main>
 </Layout>
 
@@ -29,11 +59,10 @@ import Layout from '../layouts/Layout.astro';
     padding: 2rem 1rem;
     width: 100%;
     max-width: 500px;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden;
     gap: 1.5rem;
   }
 
@@ -47,9 +76,102 @@ import Layout from '../layouts/Layout.astro';
   .settings-card {
     width: 100%;
     background: white;
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     padding: 0.5rem 1.2rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .points-card {
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .points-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    color: #7c3aed;
+  }
+
+  .points-header p {
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    color: #777;
+  }
+
+  .score-grid {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .score-row {
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  .score-row input {
+    width: 100%;
+    border: 2px solid #e9d5ff;
+    border-radius: 0.65rem;
+    background: #fef7ff;
+    padding: 0.55rem 0.6rem;
+    font: inherit;
+    text-align: center;
+    color: #1a1a2e;
+  }
+
+  .score-row input:focus {
+    border-color: #7c3aed;
+    outline: none;
+  }
+
+  .points-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .primary-btn,
+  .ghost-btn {
+    border: 0;
+    border-radius: 0.65rem;
+    cursor: pointer;
+    font-weight: 800;
+    font-family: inherit;
+  }
+
+  .primary-btn {
+    flex-shrink: 0;
+    background: #7c3aed;
+    color: white;
+    padding: 0.65rem 0.9rem;
+  }
+
+  .ghost-btn {
+    background: transparent;
+    color: #dc2626;
+    padding: 0.45rem 0;
+  }
+
+  #points-status {
+    min-width: 7ch;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #16a34a;
   }
 
   .setting {
@@ -124,10 +246,47 @@ import Layout from '../layouts/Layout.astro';
   .toggle input:checked + .toggle-slider::before {
     transform: translateX(22px);
   }
+
+  @media (max-width: 420px) {
+    main {
+      padding-top: 3.5rem;
+      gap: 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+    }
+
+    .setting {
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .points-header,
+    .points-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .primary-btn {
+      width: 100%;
+    }
+
+    #points-status {
+      text-align: left;
+    }
+  }
 </style>
 
 <script>
   const SETTINGS_KEY = 'maths-settings';
+  const DATA_KEY = 'maths-data';
+  const GAMES = ['doubles', 'maisons', 'exercice'] as const;
+
+  type Game = typeof GAMES[number];
+  interface Session { streak: number; stars: number; date: string }
+  interface GameData { bestStreak: number; totalStars: number; sessions: Session[] }
 
   function loadSettings(): Record<string, boolean> {
     try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
@@ -143,4 +302,68 @@ import Layout from '../layouts/Layout.astro';
   const easyMode = document.getElementById('easy-mode') as HTMLInputElement;
   easyMode.checked = !!loadSettings()['easyMode'];
   easyMode.addEventListener('change', () => saveSetting('easyMode', easyMode.checked));
+
+  const scoreInputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-game]'));
+  const savePointsBtn = document.getElementById('save-points') as HTMLButtonElement;
+  const clearPointsBtn = document.getElementById('clear-points') as HTMLButtonElement;
+  const pointsStatus = document.getElementById('points-status')!;
+  let statusTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function loadData(): Record<Game, GameData> {
+    try { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
+    catch { return {} as Record<Game, GameData>; }
+  }
+
+  function makeGameData(score: number): GameData {
+    return {
+      bestStreak: score,
+      totalStars: 0,
+      sessions: score > 0 ? [{ streak: score, stars: 0, date: new Date().toISOString() }] : [],
+    };
+  }
+
+  function setStatus(text: string) {
+    pointsStatus.textContent = text;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => {
+      pointsStatus.textContent = '';
+    }, 1800);
+  }
+
+  function loadPointInputs() {
+    const data = loadData();
+    scoreInputs.forEach((input) => {
+      const game = input.dataset.game as Game;
+      input.value = String(data[game]?.bestStreak || 0);
+    });
+  }
+
+  function savePointInputs() {
+    const data = loadData();
+    scoreInputs.forEach((input) => {
+      const game = input.dataset.game as Game;
+      const value = Math.max(0, Math.floor(Number(input.value) || 0));
+      input.value = String(value);
+      const previous = data[game];
+      data[game] = {
+        ...makeGameData(value),
+        totalStars: previous?.totalStars || 0,
+      };
+    });
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    setStatus('Enregistré');
+  }
+
+  function clearPointInputs() {
+    scoreInputs.forEach((input) => { input.value = '0'; });
+    savePointInputs();
+  }
+
+  savePointsBtn.addEventListener('click', savePointInputs);
+  clearPointsBtn.addEventListener('click', clearPointInputs);
+  scoreInputs.forEach((input) => {
+    input.addEventListener('change', savePointInputs);
+  });
+
+  loadPointInputs();
 </script>

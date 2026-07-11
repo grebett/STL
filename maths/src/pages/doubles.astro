@@ -66,14 +66,13 @@ import Layout from '../layouts/Layout.astro';
 <style>
   main {
     text-align: center;
-    padding: 1rem;
+    padding: 3.5rem 1rem 1rem;
     width: 100%;
     max-width: 500px;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden;
   }
 
   .status-bar {
@@ -363,6 +362,34 @@ import Layout from '../layouts/Layout.astro';
 
   .pusheen-popup.show :global(img) {
     animation: pusheen-pop 5s cubic-bezier(.17,.67,.35,1.2) forwards;
+  }
+
+  @media (max-height: 760px) {
+    main {
+      justify-content: flex-start;
+      padding-top: 3.25rem;
+    }
+
+    .exercise { padding: 1rem; }
+    .difficulty { margin-bottom: 0.5rem; }
+    .dots-row {
+      min-height: 54px;
+      margin-bottom: 0.7rem;
+    }
+    .dots-group :global(.dot) {
+      width: 13px;
+      height: 13px;
+    }
+    .equation { margin-bottom: 0.8rem; }
+    .number, .operator, input { font-size: 2.1rem; }
+    .numpad {
+      gap: 0.35rem;
+      margin: 0.6rem auto;
+    }
+    .numkey {
+      font-size: 1.25rem;
+      padding: 0.45rem;
+    }
   }
 
   @keyframes pusheen-pop {

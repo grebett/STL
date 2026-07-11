@@ -47,14 +47,13 @@ import Layout from '../layouts/Layout.astro';
 <style>
   main {
     text-align: center;
-    padding: 1rem;
+    padding: 3.5rem 1rem 1rem;
     width: 100%;
     max-width: 540px;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden;
   }
 
   .exercise {
@@ -353,6 +352,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   @media (max-height: 680px) {
+    main {
+      justify-content: flex-start;
+      padding-top: 3.25rem;
+    }
+
     .exercise { padding: 0.9rem; }
     h1 { font-size: 1.4rem; margin-bottom: 0.4rem; }
     .roof { height: 66px; padding-top: 1rem; }
