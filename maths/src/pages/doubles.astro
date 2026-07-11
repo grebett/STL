@@ -411,6 +411,17 @@ import Layout from '../layouts/Layout.astro';
     catch { return false; }
   })();
   const STAR_INTERVAL = easyMode ? 5 : 10;
+  const SCORE_BASES_KEY = 'maths-score-bases';
+
+  function loadScoreBase(game: string) {
+    try {
+      const bases = JSON.parse(localStorage.getItem(SCORE_BASES_KEY) || '{}');
+      const value = Number(bases[game]);
+      return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    } catch {
+      return 0;
+    }
+  }
 
   function confetti() {
     const colors = ['#f472b6', '#818cf8', '#7c3aed', '#16a34a', '#facc15', '#fb923c'];
@@ -470,7 +481,7 @@ import Layout from '../layouts/Layout.astro';
 
   let current: [number, number];
   let lastIndex = -1;
-  let streak = 0;
+  let streak = loadScoreBase('doubles');
   let sessionStars = 0;
   const COOLDOWN_MASTERED = 3;
   const COOLDOWN_FAILED = 1;
@@ -497,6 +508,8 @@ import Layout from '../layouts/Layout.astro';
   function updateStars() {
     starsEl.textContent = Array(sessionStars).fill('\u2B50').join('');
   }
+
+  streakEl.textContent = String(streak);
 
   function saveBest(game: string, streak: number, stars: number) {
     const data = JSON.parse(localStorage.getItem('maths-data') || '{}');

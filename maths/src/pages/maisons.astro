@@ -391,12 +391,23 @@ import Layout from '../layouts/Layout.astro';
     catch { return false; }
   })();
   const STAR_INTERVAL = easyMode ? 5 : 10;
+  const SCORE_BASES_KEY = 'maths-score-bases';
   const HARD_CARD_COUNT = 10;
+
+  function loadScoreBase(game: string) {
+    try {
+      const bases = JSON.parse(localStorage.getItem(SCORE_BASES_KEY) || '{}');
+      const value = Number(bases[game]);
+      return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    } catch {
+      return 0;
+    }
+  }
 
   let target = 7;
   let lastTarget = -1;
   let remaining = 0;
-  let streak = 0;
+  let streak = loadScoreBase('maisons');
   let sessionStars = 0;
 
   function rand(min: number, max: number) {
@@ -467,6 +478,8 @@ import Layout from '../layouts/Layout.astro';
   function updateStars() {
     starsEl.textContent = Array(sessionStars).fill('★').join('');
   }
+
+  streakEl.textContent = String(streak);
 
   function saveBest(game: string, score: number, stars: number) {
     const data = JSON.parse(localStorage.getItem('maths-data') || '{}');

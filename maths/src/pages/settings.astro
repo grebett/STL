@@ -282,11 +282,13 @@ import Layout from '../layouts/Layout.astro';
 <script>
   const SETTINGS_KEY = 'maths-settings';
   const DATA_KEY = 'maths-data';
+  const SCORE_BASES_KEY = 'maths-score-bases';
   const GAMES = ['doubles', 'maisons', 'exercice'] as const;
 
   type Game = typeof GAMES[number];
   interface Session { streak: number; stars: number; date: string }
   interface GameData { bestStreak: number; totalStars: number; sessions: Session[] }
+  type ScoreBases = Partial<Record<Game, number>>;
 
   function loadSettings(): Record<string, boolean> {
     try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
@@ -314,12 +316,9 @@ import Layout from '../layouts/Layout.astro';
     catch { return {} as Record<Game, GameData>; }
   }
 
-  function makeGameData(score: number): GameData {
-    return {
-      bestStreak: score,
-      totalStars: 0,
-      sessions: score > 0 ? [{ streak: score, stars: 0, date: new Date().toISOString() }] : [],
-    };
+  function loadScoreBases(): ScoreBases {
+    try { return JSON.parse(localStorage.getItem(SCORE_BASES_KEY) || '{}'); }
+    catch { return {}; }
   }
 
   function setStatus(text: string) {
@@ -331,26 +330,23 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function loadPointInputs() {
-    const data = loadData();
+    const bases = loadScoreBases();
+    const legacyData = loadData();
     scoreInputs.forEach((input) => {
       const game = input.dataset.game as Game;
-      input.value = String(data[game]?.bestStreak || 0);
+      input.value = String(bases[game] ?? legacyData[game]?.bestStreak ?? 0);
     });
   }
 
   function savePointInputs() {
-    const data = loadData();
+    const bases: ScoreBases = {};
     scoreInputs.forEach((input) => {
       const game = input.dataset.game as Game;
       const value = Math.max(0, Math.floor(Number(input.value) || 0));
       input.value = String(value);
-      const previous = data[game];
-      data[game] = {
-        ...makeGameData(value),
-        totalStars: previous?.totalStars || 0,
-      };
+      bases[game] = value;
     });
-    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    localStorage.setItem(SCORE_BASES_KEY, JSON.stringify(bases));
     setStatus('Enregistré');
   }
 
